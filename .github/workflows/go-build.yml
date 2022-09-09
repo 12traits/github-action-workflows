@@ -1,7 +1,10 @@
 name: go-build
 
 on:
-  workflow_call:    
+  workflow_call:
+    secrets:
+      gh-token:
+        required: true
 
 jobs:
   build-and-test:
@@ -18,14 +21,14 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-ukama
+          key: ${{ runner.os }}-go
           restore-keys: |
             ${{ runner.os }}-go
 
       - name: Granting private modules access
         shell: bash
         env:
-          ORG_GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
+          ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
         run: |
             git config --global url."https://$ORG_GITHUB_TOKEN@github.com/12traits".insteadOf "https://github.com/12traits"   
 
@@ -52,7 +55,7 @@ jobs:
         - name: Granting private modules access
           shell: bash
           env:
-            ORG_GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
+            ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
           run: |
               git config --global url."https://$ORG_GITHUB_TOKEN@github.com/12traits".insteadOf "https://github.com/12traits"   
 
