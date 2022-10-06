@@ -12,7 +12,7 @@ jobs:
     steps:          
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.18
+          go-version: 1.19
 
       - uses: actions/checkout@v3
 
@@ -21,9 +21,9 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go
+          key: ${{ runner.os }}-${{ github.repository }}-go
           restore-keys: |
-            ${{ runner.os }}-go
+            ${{ runner.os }}-${{ github.repository }}-go
 
       - name: Granting private modules access
         shell: bash
@@ -48,7 +48,7 @@ jobs:
     steps:  
         - uses: actions/setup-go@v3
           with:
-            go-version: 1.18
+            go-version: 1.19
 
         - uses: actions/checkout@v3
       
