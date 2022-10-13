@@ -1,0 +1,75 @@
+name: go-integration-test-build
+
+on:
+  workflow_call:
+    secrets:
+      gh-token:
+        required: true
+      gcp-project-id:
+        required: true
+    inputs:
+      repository-base-name:
+        required: true
+        type: string
+        description: 'Base name of docker registyr repository. For example, if base repo is foo then final image repo will be foo-test'
+      
+
+jobs:
+  go-build-integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-core-api
+          restore-keys: |
+            ${{ runner.os }}-go
+
+      - name: Init git vars
+        shell: bash
+        id: vars-step
+        run: |
+          echo "::set-output name=sha-short::$(git rev-parse --short=7 HEAD)"
+          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+
+      - id: gcp-auth
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.gcp-project-id }}
+
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      - name: docker-auth
+        shell: bash
+        run: gcloud auth configure-docker -q
+
+      - name: Granting private modules access
+        shell: bash
+        env:
+          ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
+        run: |
+            git config --global url."https://$ORG_GITHUB_TOKEN@github.com/12traits".insteadOf "https://github.com/12traits"   
+
+      - name: Build Test Binary
+        shell: bash
+        run: make integration.build
+
+      - name: Build and Push Integration Tests Image
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+        env:
+          REGISTRY: eu.gcr.io/${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}-test
+        run: |
+          docker build -f Int.Dockerfile -t $REGISTRY\:${{ steps.vars-step.outputs.sha-short }} \
+            -t $REGISTRY\:${{ steps.vars-step.outputs.branch }}-${{ github.run_number }} \
+            -t $REGISTRY\:latest .  && \
+          docker push $REGISTRY --all-tags
