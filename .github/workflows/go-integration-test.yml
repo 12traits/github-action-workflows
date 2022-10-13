@@ -7,6 +7,9 @@ on:
         required: true
       gcp-project-id:
         required: true
+      gcp-sa-json: 
+        required: true
+        description: json with gcp SA json
     inputs:
       repository-base-name:
         required: true
@@ -43,7 +46,7 @@ jobs:
       - id: gcp-auth
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.gcp-project-id }}
+          credentials_json: ${{ secrets.gcp-sa-json }}
 
       - name: Set up Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v0'
