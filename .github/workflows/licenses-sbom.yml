@@ -4,10 +4,20 @@ on:
   workflow_call:
 
 jobs:
-  licenses-sbom:
+  sbom:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - uses: anchore/sbom-action/download-syft@v0
       - uses: anchore/sbom-action@v0
         with:
-          path: ./
+          path: .
+  licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Perform checks
+        id: license-check
+        uses: ralexander-phi/license_approval@master
+        with:
+          package_manager: 'bundler'
