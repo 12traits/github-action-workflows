@@ -20,4 +20,4 @@ jobs:
         id: license-check
         uses: ralexander-phi/license_approval@master
         with:
-          package_manager: 'bundler'
+          package_manager: ''
