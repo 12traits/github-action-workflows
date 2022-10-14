@@ -5,9 +5,9 @@ on:
 
 jobs:
   licenses-sbom:
-  runs-on: ubuntu-latest
-  steps:
-    - uses: anchore/sbom-action/download-syft
-    - uses: anchore/sbom-action@v0
-      with:
-        path: ./
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anchore/sbom-action/download-syft
+      - uses: anchore/sbom-action@v0
+        with:
+          path: ./
