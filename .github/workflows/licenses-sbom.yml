@@ -2,7 +2,9 @@ name: licenses-sbom
 
 on:
   workflow_call:
-
+    secrets:
+      gh-token:
+        required: true
 jobs:
   sbom:
     runs-on: ubuntu-latest
@@ -16,6 +18,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Granting private modules access
+        shell: bash
+        env:
+          ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
+        run: |
+            git config --global url."https://$ORG_GITHUB_TOKEN@github.com/12traits".insteadOf "https://github.com/12traits"
       - name: Perform checks
         id: license-check
         uses: 12traits/license_approval@master
