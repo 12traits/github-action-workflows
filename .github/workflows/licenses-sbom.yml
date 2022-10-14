@@ -23,3 +23,8 @@ jobs:
         uses: 12traits/license_approval@master
         with:
           gh-token: ${{ secrets.gh-token }}
+      - run: echo ${{ steps.license-check.outputs.license_report_json }} > /tmp/license-report.json
+      - uses: actions/upload-artifact@v3
+        with:
+          name: licenses-report
+          path: /tmp/license-report.json
