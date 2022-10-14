@@ -18,6 +18,4 @@ jobs:
       - uses: actions/checkout@v3
       - name: Perform checks
         id: license-check
-        uses: ralexander-phi/license_approval@master
-        with:
-          package_manager: ''
+        uses: 12traits/license_approval@master
