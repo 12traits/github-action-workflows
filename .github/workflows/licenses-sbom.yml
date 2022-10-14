@@ -21,4 +21,5 @@ jobs:
       - name: Perform checks
         id: license-check
         uses: 12traits/license_approval@master
-        gh-token: ${{ secrets.gh-token }}
+        with:
+          gh-token: ${{ secrets.gh-token }}
