@@ -50,7 +50,14 @@ jobs:
           with:
             go-version: 1.19
 
-        - uses: actions/checkout@v3        
+        - uses: actions/checkout@v3
+
+        - name: Granting private modules access
+          shell: bash
+          env:
+            ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
+          run: |
+              git config --global url."https://$ORG_GITHUB_TOKEN@github.com/12traits".insteadOf "https://github.com/12traits"           
 
         # run locally by installing golangci-lint https://golangci-lint.run/usage/install/#local-installation
         # and executing it in the root of the project
