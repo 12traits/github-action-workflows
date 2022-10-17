@@ -1,0 +1,55 @@
+name: docker-push
+on:
+  workflow_call:
+    secrets:
+      gh-token:
+        required: true
+      gcp-sa-json:
+        required: true
+        description: GCP access key in Json that have permissions to push images to repo
+      gcp-project-id:
+        required: true              
+    inputs:
+      repository-base-name:
+        required: true
+        type: string
+        description: 'Docker registyr repository name'
+
+
+jobs:
+  docker-push:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Init git vars
+      shell: bash
+      id: vars-step
+      run: |
+        echo "::set-output name=sha-short::$(git rev-parse --short=7 HEAD)"
+        echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+
+    - id: gcp-auth
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.gcp-sa-json }}
+
+    - name: Set up Cloud SDK
+      uses: 'google-github-actions/setup-gcloud@v0'
+
+    - name: docker-auth
+      shell: bash
+      run: gcloud auth configure-docker -q
+
+    - name: Build and Push Image
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        REGISTRY: eu.gcr.io/${{ secrets.gcp-project-id }}/${{ secrets.repository-base-name }}
+        GH_ACCESS_TOKEN: ${{ secrets.gh-token }}
+      run: |
+        docker build -f Dockerfile --build-arg  GH_ACCESS_TOKEN=$GH_ACCESS_TOKEN --build-arg BIN_VER=0.0.${{ github.run_number }} \
+          -t $REGISTRY\:${{ steps.vars-step.outputs.sha-short }} \
+          -t $REGISTRY\:${{ steps.vars-step.outputs.branch }}-${{ github.run_number }} \
+          -t $REGISTRY\:latest \
+          -t $REGISTRY\:${{ steps.vars-step.outputs.branch }} .  && \
+        docker push $REGISTRY --all-tags
