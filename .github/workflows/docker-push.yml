@@ -21,7 +21,7 @@ on:
         default: eu.gcr.io
     outputs:
       sha-short:
-        value: ${{ jobs.docker-push.outputs.sba-short }}
+        value: ${{ jobs.docker-push.outputs.sha-short }}
         description: short SHA of the commit
       branch:
         value: ${{ jobs.docker-push.outputs.branch }}
