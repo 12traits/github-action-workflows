@@ -15,7 +15,10 @@ on:
         required: true
         type: string
         description: 'Docker registyr repository name'
-
+      docker-registry:
+        type: string
+        description: Docker registry DNS
+        default: eu.gcr.io
 
 jobs:
   docker-push:
@@ -45,7 +48,7 @@ jobs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:
-        REGISTRY: eu.gcr.io/${{ secrets.gcp-project-id }}/${{ secrets.repository-base-name }}
+        REGISTRY: ${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ secrets.repository-base-name }}
         GH_ACCESS_TOKEN: ${{ secrets.gh-token }}
       run: |
         docker build -f Dockerfile --build-arg  GH_ACCESS_TOKEN=$GH_ACCESS_TOKEN --build-arg BIN_VER=0.0.${{ github.run_number }} \
