@@ -1,4 +1,5 @@
 name: kubernetes-deploy
+
 on:
   workflow_call:
     secrets:
@@ -37,7 +38,8 @@ on:
         required: true
         type: string
         description: K8s namespace where the deployment was made
-
+jobs:
+  deploy-image:
     - id: gcp-auth
       uses: google-github-actions/auth@v0
       with:
