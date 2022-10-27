@@ -19,18 +19,28 @@ on:
         type: string
         description: Docker registry DNS
         default: eu.gcr.io
+    outputs:
+      sha-short:
+        value: ${{ jobs.docker-push.outputs.sba-short }}
+        description: short SHA of the commit
+      branch:
+        value: ${{ jobs.docker-push.outputs.branch }}
+        description: branch name
 
 jobs:
   docker-push:
     runs-on: ubuntu-latest
+    outputs:
+      sha-short: ${{ steps.vars-step.outputs.sha-short }}
+      branch: ${{ steps.vars-step.outputs.branch }}
     steps:
     - uses: actions/checkout@v3
     - name: Init git vars
       shell: bash
       id: vars-step
       run: |
-        echo "::set-output name=sha-short::$(git rev-parse --short=7 HEAD)"
-        echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        echo "sha-short=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
+        echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
 
     - id: gcp-auth
       uses: google-github-actions/auth@v0
