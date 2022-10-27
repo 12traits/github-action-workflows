@@ -5,20 +5,28 @@ on:
     secrets:
       gh-token:
         required: true
+    outputs:
+      semver:
+        value: ${{ jobs.release.outputs.semver }}
+        description: semantic versioning from release branch name
 jobs:
   release:
     name: "Github Tag & Release"
     runs-on: "ubuntu-latest"
-
+    outputs:
+      semver: ${{ steps.vars-step.outputs.semver }}
     steps:
-      - run: |
+      - name: Retrieve semver from release branch
+        shell: bash
+        id: vars-step
+        run: |
           cd $GITHUB_WORKSPACE
           export SEMVER=`echo "${{ github.event.head_commit.message }}" | grep "release" | cut -d '-' -f 2 | head -n 1`
-          echo "SEMVER=$SEMVER" >> $GITHUB_ENV
+          echo "semver=$SEMVER" >> $GITHUB_OUTPUT
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.gh-token }}"
-          automatic_release_tag: "${{ env.SEMVER }}"
+          automatic_release_tag: "${{ steps.vars-step.outputs.semver }}"
           prerelease: false
           draft: false
-          title: "Release ${{ env.SEMVER }}"
+          title: "Release ${{ steps.vars-step.outputs.semver }}"
