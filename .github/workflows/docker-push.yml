@@ -8,7 +8,8 @@ on:
         required: true
         description: GCP access key in Json that have permissions to push images to repo
       gcp-project-id:
-        required: true              
+        required: true
+        description: GCP Project ID
     inputs:
       repository-base-name:
         required: true
