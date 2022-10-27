@@ -1,0 +1,54 @@
+name: kubernetes-deploy
+on:
+  workflow_call:
+    secrets:
+      gcp-sa-json:
+        required: true
+        description: GCP access key in Json that have permissions to push images to repo
+      gke-project-id:
+        required: true
+        description: GCP Project ID
+    inputs:
+      deployment-image:
+        required: true
+        type: string
+        description: K8s deployment image
+      docker-image:
+        required: true
+        type: string
+        description: Deployment docker image to deploy
+      docker-tag:
+        required: true
+        type: string
+        description: Docker image tag to deploy
+      docker-registry:
+        type: string
+        description: Docker registry DNS
+        default: eu.gcr.io
+      cluster:
+        required: true
+        type: string
+        description: Cluster name 
+      zone:
+        type: string
+        description: Cluster zone
+        default: europe-west1-b
+      namespace:
+        required: true
+        type: string
+        description: K8s namespace where the deployment was made
+
+    - id: gcp-auth
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.gcp-sa-json }}
+
+    - name: Set up Cloud SDK
+      uses: 'google-github-actions/setup-gcloud@v0'
+
+    - run: |-
+        gcloud container clusters get-credentials ${{ inputs.cluster }} --zone ${{ inputs.zone }}
+    - name: Deploy
+      run: |-
+        kubectl set image deployment ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ inputs.deployment-image }}=${{ inputs.docker-registry }}/${{ secrets.gke-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
+        kubectl rollout status deployment/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
