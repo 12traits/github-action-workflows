@@ -6,7 +6,7 @@ on:
       gcp-sa-json:
         required: true
         description: GCP access key in Json that have permissions to push images to repo
-      gke-project-id:
+      gcp-project-id:
         required: true
         description: GCP Project ID
     inputs:
@@ -55,5 +55,5 @@ jobs:
           gcloud container clusters get-credentials ${{ inputs.cluster }} --zone ${{ inputs.zone }}
       - name: Deploy
         run: |-
-          kubectl set image deployment ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ inputs.deployment-image }}=${{ inputs.docker-registry }}/${{ secrets.gke-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
+          kubectl set image deployment ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ inputs.deployment-image }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
           kubectl rollout status deployment/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
