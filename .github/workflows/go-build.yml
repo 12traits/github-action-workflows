@@ -64,5 +64,5 @@ jobs:
         - name: golangci-lint
           uses: golangci/golangci-lint-action@v3.2.0
           with:
-            args: --timeout=5m
+            args: --timeout=5m --enable unparam
  
