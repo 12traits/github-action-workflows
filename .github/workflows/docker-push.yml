@@ -14,7 +14,7 @@ on:
       repository-base-name:
         required: true
         type: string
-        description: 'Docker registry's repository name'
+        description: Docker registry's repository name
       docker-registry:
         type: string
         description: Docker registry DNS
