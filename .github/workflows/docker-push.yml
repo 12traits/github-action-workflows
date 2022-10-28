@@ -71,7 +71,7 @@ jobs:
         echo "${{ inputs.is-latest }}"
         echo ${{ inputs.is-latest }}
         export LATEST=""
-        if [ "${{ inputs.is-latest }}" -eq "true" ]; then
+        if [[ "${{ inputs.is-latest }}" -eq "true" ]]; then
           export LATEST="-t $REGISTRY\:latest"
         fi
         docker build -f Dockerfile --build-arg  GH_ACCESS_TOKEN=$GH_ACCESS_TOKEN \
