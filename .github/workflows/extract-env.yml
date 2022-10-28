@@ -23,7 +23,7 @@ jobs:
         run: |
           echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
           if [[ ${GITHUB_REF#refs/heads/} == "develop" ]]; then
-            echo "env=staging" >> GITHUB_OUTPUT
+            echo "env=staging" >> $GITHUB_OUTPUT
           elif [[ ${GITHUB_REF#refs/heads/} == "master" ]]; then
-            echo "env=prod" >> GITHUB_OUTPUT
+            echo "env=prod" >> $GITHUB_OUTPUT
           fi
