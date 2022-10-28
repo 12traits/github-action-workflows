@@ -14,7 +14,7 @@ on:
       repository-base-name:
         required: true
         type: string
-        description: 'Docker registyr repository name'
+        description: 'Docker registry's repository name'
       docker-registry:
         type: string
         description: Docker registry DNS
@@ -22,7 +22,11 @@ on:
       release-tag:
         type: string
         description: Git release tag
-        default: latest
+        default: dev
+      is-latest:
+        type: boolean
+        description: Do we want to tag this image as latest
+        default: false
     outputs:
       sha-short:
         value: ${{ jobs.docker-push.outputs.sha-short }}
@@ -64,8 +68,13 @@ jobs:
         REGISTRY: ${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}
         GH_ACCESS_TOKEN: ${{ secrets.gh-token }}
       run: |
+        export $LATEST=""
+        if [ "${{ inputs.is-latest }}" -eq "true" ]; then
+          export $LATEST="-t $REGISTRY\:latest"
+        fi
         docker build -f Dockerfile --build-arg  GH_ACCESS_TOKEN=$GH_ACCESS_TOKEN \
           -t $REGISTRY\:${{ steps.vars-step.outputs.sha-short }} \
           -t $REGISTRY\:${{ inputs.release-tag }} \
+          $LATEST \
           -t $REGISTRY\:${{ steps.vars-step.outputs.branch }} .  && \
         docker push $REGISTRY --all-tags
