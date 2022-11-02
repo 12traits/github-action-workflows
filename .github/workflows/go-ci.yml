@@ -1,4 +1,4 @@
-name: go-build
+name: go-ci
 
 on:
   workflow_call:
@@ -19,7 +19,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            ~/.cache/go-build
+            ~/.cache/go-ci
             ~/go/pkg/mod
           key: ${{ runner.os }}-${{ github.repository }}-go
           restore-keys: |

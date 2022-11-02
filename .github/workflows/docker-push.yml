@@ -19,9 +19,9 @@ on:
         type: string
         description: Docker registry DNS
         default: eu.gcr.io
-      release-tag:
+      docker-tag:
         type: string
-        description: Git release tag
+        description: Docker tag
         default: dev
       is-latest:
         type: boolean
@@ -74,7 +74,7 @@ jobs:
         fi
         docker build -f Dockerfile --build-arg  GH_ACCESS_TOKEN=$GH_ACCESS_TOKEN \
           -t $REGISTRY\:${{ steps.vars-step.outputs.sha-short }} \
-          -t $REGISTRY\:${{ inputs.release-tag }} \
+          -t $REGISTRY\:${{ inputs.docker-tag }} \
           $LATEST \
           -t $REGISTRY\:${{ steps.vars-step.outputs.branch }} .  && \
         docker push $REGISTRY --all-tags
