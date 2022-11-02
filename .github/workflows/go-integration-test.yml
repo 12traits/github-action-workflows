@@ -40,8 +40,12 @@ jobs:
         shell: bash
         id: vars-step
         run: |
-          echo "::set-output name=sha-short::$(git rev-parse --short=7 HEAD)"
-          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+          echo "sha-short=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
+          if [[ ${GITHUB_REF} = *refs/heads/* ]]; then
+            echo "branch=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          else
+            echo "branch=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
+          fi
 
       - id: gcp-auth
         uses: google-github-actions/auth@v0
