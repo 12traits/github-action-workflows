@@ -47,7 +47,11 @@ jobs:
       id: vars-step
       run: |
         echo "sha-short=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
-        echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        if [[ ${GITHUB_REF} = *refs/heads/* ]]; then
+          echo "branch=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+        else
+          echo "branch=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
+        fi
 
     - id: gcp-auth
       uses: google-github-actions/auth@v0
