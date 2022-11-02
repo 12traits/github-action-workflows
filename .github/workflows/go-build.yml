@@ -7,7 +7,7 @@ on:
         required: true
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
     steps:          
       - uses: actions/setup-go@v3
@@ -31,12 +31,6 @@ jobs:
           ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
         run: |
             git config --global url."https://$ORG_GITHUB_TOKEN@github.com/12traits".insteadOf "https://github.com/12traits"   
-
-      - name: Build
-        shell: bash
-        env:
-          BUILD_NUMBER: ${{ github.run_number }}
-        run: go build ./...
 
       - name: Test
         shell: bash
