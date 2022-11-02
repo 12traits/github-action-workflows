@@ -1,4 +1,4 @@
-name: go-ci
+name: go-build
 
 on:
   workflow_call:
@@ -19,7 +19,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            ~/.cache/go-ci
+            ~/.cache/go-build
             ~/go/pkg/mod
           key: ${{ runner.os }}-${{ github.repository }}-go
           restore-keys: |
@@ -31,6 +31,12 @@ jobs:
           ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
         run: |
             git config --global url."https://$ORG_GITHUB_TOKEN@github.com/12traits".insteadOf "https://github.com/12traits"   
+
+      - name: Build
+        shell: bash
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: go build ./...
 
       - name: Test
         shell: bash
