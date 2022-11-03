@@ -41,54 +41,54 @@ jobs:
     outputs:
       sha-short: ${{ steps.vars-step.outputs.sha-short }}
     steps:
-    - name: Init git vars
-      shell: bash
-      id: vars-step
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
-          export JSON_RESP=`curl -s --request GET --url "${{ github.event.issue.pull_request.url }}" --header "Authorization: Bearer $GH_TOKEN"`
-          echo "sha-short=`echo $JSON_RESP | jq -r .head.sha | cut -c1-7`" >> $GITHUB_OUTPUT
-          echo "branch=`echo $JSON_RESP | jq -r .head.ref`" >> $GITHUB_OUTPUT
-        elif [[ $GITHUB_REF = *refs/heads/* ]]; then
-          echo "sha-short=`echo $GITHUB_SHA | cut -c1-7`" >> $GITHUB_OUTPUT
-          echo "branch=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
-        else
-          echo "sha-short=`echo ${{ github.event.pull_request.head.sha }} | cut -c1-7`" >> $GITHUB_OUTPUT
-          echo "branch=$GITHUB_HEAD_REF" >> $GITHUB_OUTPUT
-        fi
-    - uses: actions/checkout@v3
-      with:
-        ref: ${{ steps.vars-steps.outputs.branch }}
+      - name: Init git vars
+        shell: bash
+        id: vars-step
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+            export JSON_RESP=`curl -s --request GET --url "${{ github.event.issue.pull_request.url }}" --header "Authorization: Bearer $GH_TOKEN"`
+            echo "sha-short=`echo $JSON_RESP | jq -r .head.sha | cut -c1-7`" >> $GITHUB_OUTPUT
+            echo "branch=`echo $JSON_RESP | jq -r .head.ref`" >> $GITHUB_OUTPUT
+          elif [[ $GITHUB_REF = *refs/heads/* ]]; then
+            echo "sha-short=`echo $GITHUB_SHA | cut -c1-7`" >> $GITHUB_OUTPUT
+            echo "branch=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
+          else
+            echo "sha-short=`echo ${{ github.event.pull_request.head.sha }} | cut -c1-7`" >> $GITHUB_OUTPUT
+            echo "branch=$GITHUB_HEAD_REF" >> $GITHUB_OUTPUT
+          fi
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.vars-steps.outputs.branch }}
 
 
-    - id: gcp-auth
-      uses: google-github-actions/auth@v0
-      with:
-        credentials_json: ${{ secrets.gcp-sa-json }}
+      - id: gcp-auth
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.gcp-sa-json }}
 
-    - name: Set up Cloud SDK
-      uses: 'google-github-actions/setup-gcloud@v0'
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v0'
 
-    - name: docker-auth
-      shell: bash
-      run: gcloud auth configure-docker -q
+      - name: docker-auth
+        shell: bash
+        run: gcloud auth configure-docker -q
 
-    - name: Build and Push Image
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-      env:
-        REGISTRY: ${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}
-        GH_ACCESS_TOKEN: ${{ secrets.gh-token }}
-      run: |
-        export LATEST=""
-        if [[ "${{ inputs.is-latest }}" == "true" ]]; then
-          export LATEST="-t $REGISTRY:latest"
-        fi
-        docker build -f Dockerfile --build-arg  GH_ACCESS_TOKEN=$GH_ACCESS_TOKEN \
-          -t $REGISTRY\:${{ steps.vars-step.outputs.sha-short }} \
-          -t $REGISTRY\:${{ inputs.docker-tag }} \
-          $LATEST \
-          -t $REGISTRY\:${{ steps.vars-step.outputs.branch }} .  && \
-        docker push $REGISTRY --all-tags
+      - name: Build and Push Image
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+        env:
+          REGISTRY: ${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}
+          GH_ACCESS_TOKEN: ${{ secrets.gh-token }}
+        run: |
+          export LATEST=""
+          if [[ "${{ inputs.is-latest }}" == "true" ]]; then
+            export LATEST="-t $REGISTRY:latest"
+          fi
+          docker build -f Dockerfile --build-arg  GH_ACCESS_TOKEN=$GH_ACCESS_TOKEN \
+            -t $REGISTRY\:${{ steps.vars-step.outputs.sha-short }} \
+            -t $REGISTRY\:${{ inputs.docker-tag }} \
+            $LATEST \
+            -t $REGISTRY\:${{ steps.vars-step.outputs.branch }} .  && \
+          docker push $REGISTRY --all-tags
