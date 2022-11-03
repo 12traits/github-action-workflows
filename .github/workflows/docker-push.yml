@@ -55,7 +55,7 @@ jobs:
           if [[ -n "${{ github.event.pull_request.head.sha }}" ]]; then
             echo "sha-short=`echo ${{ github.event.pull_request.head.sha }} | cut -c1-7`" >> $GITHUB_OUTPUT
           else
-            echo "sha-short=`curl --request GET --url "${{ github.event.issue.pull_request.url }}" --header "Authorization: Bearer $GH_ACCESS_TOKEN" | jq -r .head.sha | cut -c1-7`" >> $GITHUB_OUTPUT
+            echo "sha-short=`curl --request GET --url '${{ github.event.issue.pull_request.url }}' --header 'Authorization: Bearer $GH_ACCESS_TOKEN' | jq -r .head.sha | cut -c1-7`" >> $GITHUB_OUTPUT
           fi
           echo "branch=$GITHUB_HEAD_REF" >> $GITHUB_OUTPUT
         fi
