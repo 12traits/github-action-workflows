@@ -50,6 +50,9 @@ jobs:
       run: |
         if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
           export JSON_RESP=`curl -s --request GET --url '${{ github.event.issue.pull_request.url }}' --header 'Authorization: Bearer $GH_ACCESS_TOKEN'`
+          echo $JSON_RESP | jq -r .head.sha | cut -c1-7
+          echo $JSON_RESP | jq -r .head.ref
+          echo $JSON_RESP
           echo "sha-short=`echo $JSON_RESP | jq -r .head.sha | cut -c1-7`" >> $GITHUB_OUTPUT
           echo "branch=`echo $JSON_RESP | jq -r .head.ref`" >> $GITHUB_OUTPUT
         elif [[ $GITHUB_REF = *refs/heads/* ]]; then
