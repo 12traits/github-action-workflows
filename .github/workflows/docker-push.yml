@@ -46,11 +46,12 @@ jobs:
       shell: bash
       id: vars-step
       run: |
-        echo "sha-short=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
-        if [[ ${GITHUB_REF} = *refs/heads/* ]]; then
-          echo "branch=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+        if [[ $GITHUB_REF = *refs/heads/* ]]; then
+          echo "sha-short=`echo $GITHUB_SHA | cut -c1-7`" >> $GITHUB_OUTPUT
+          echo "branch=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
         else
-          echo "branch=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
+          echo "sha-short=`echo ${{ github.event.pull_request.head.sha }} | cut -c1-7`" >> $GITHUB_OUTPUT
+          echo "branch=$GITHUB_HEAD_REF" >> $GITHUB_OUTPUT
         fi
 
     - id: gcp-auth
