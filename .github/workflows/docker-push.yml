@@ -45,6 +45,8 @@ jobs:
     - name: Init git vars
       shell: bash
       id: vars-step
+      env:
+        GH_ACCESS_TOKEN: ${{ secrets.gh-token }}
       run: |
         if [[ $GITHUB_REF = *refs/heads/* ]]; then
           echo "sha-short=`echo $GITHUB_SHA | cut -c1-7`" >> $GITHUB_OUTPUT
@@ -53,7 +55,7 @@ jobs:
           if [[ -n "${{ github.event.pull_request.head.sha }}" ]]; then
             echo "sha-short=`echo ${{ github.event.pull_request.head.sha }} | cut -c1-7`" >> $GITHUB_OUTPUT
           else
-            echo "sha-short=`echo ${{ github.event.issue.commit_id }} | cut -c1-7`" >> $GITHUB_OUTPUT
+            echo "sha-short=`curl --request GET --url "${{ github.event.issue.pull_request.url }}" --header "Authorization: Bearer $GH_ACCESS_TOKEN" | jq -r .head.sha | cut -c1-7`" >> $GITHUB_OUTPUT
           fi
           echo "branch=$GITHUB_HEAD_REF" >> $GITHUB_OUTPUT
         fi
