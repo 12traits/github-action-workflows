@@ -2,7 +2,15 @@ name: kubernetes-deploy
 
 on:
   workflow_call:
-    secrets: inherit
+    secrets:
+      k8s-sa-json:
+        required: true
+        description: K8S access key in Json that have permissions to set image:tag to kubernetes deployments
+      gcp-project-id:
+        required: true
+        description: GCP Project ID
+      slack-build-webhook:
+        required: true
     inputs:
       deployment-image:
         required: true
@@ -37,13 +45,13 @@ jobs:
     name: "Update docker image/tag to a k8s deployment"
     runs-on: "ubuntu-latest"
     env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_BUILD_WEBHOOK }}
+      SLACK_WEBHOOK_URL: ${{ secrets.slack-build-webhook }}
     steps:
       - uses: actions/checkout@v3
       - id: gcp-auth
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.K8S_SET_IMAGE_SA_KEY }}
+          credentials_json: ${{ secrets.k8s-sa-json }}
 
       - name: Set up Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v0'
@@ -51,9 +59,9 @@ jobs:
       - run: |-
           gcloud container clusters get-credentials ${{ inputs.cluster }} --zone ${{ inputs.zone }}
       - name: Deploy
-        id: deploy-image
+        id: deploy-docker-image
         run: |-
-          kubectl set image deployment ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ inputs.deployment-image }}=${{ inputs.docker-registry }}/${{ secrets.GKE_PROJECT_ID }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
+          kubectl set image deployment ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ inputs.deployment-image }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
           kubectl rollout status deployment/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
       - uses: act10ns/slack@v1
         with: 

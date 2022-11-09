@@ -2,13 +2,17 @@ name: go-build
 
 on:
   workflow_call:
-    secrets: inherit
+    secrets:
+      gh-token:
+        required: true
+      slack-build-webhook:
+        required: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_BUILD_WEBHOOK }}
+      SLACK_WEBHOOK_URL: ${{ secrets.slack-build-webhook }}
     steps:          
       - uses: actions/setup-go@v3
         with:
@@ -28,7 +32,7 @@ jobs:
       - name: Granting private modules access
         shell: bash
         env:
-          ORG_GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
+          ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
         run: |
             git config --global url."https://$ORG_GITHUB_TOKEN@github.com/12traits".insteadOf "https://github.com/12traits"   
 
@@ -52,7 +56,7 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_BUILD_WEBHOOK }}
+      SLACK_WEBHOOK_URL: ${{ secrets.slack-build-webhook }}
     steps:  
         - uses: actions/setup-go@v3
           with:
@@ -63,7 +67,7 @@ jobs:
         - name: Granting private modules access
           shell: bash
           env:
-            ORG_GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
+            ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
           run: |
               git config --global url."https://$ORG_GITHUB_TOKEN@github.com/12traits".insteadOf "https://github.com/12traits"           
 

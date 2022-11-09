@@ -1,7 +1,17 @@
 name: docker-push
 on:
   workflow_call:
-    secrets: inherit
+    secrets:
+      gh-token:
+        required: true
+      gcp-sa-json:
+        required: true
+        description: GCP access key in Json that have permissions to push images to repo
+      gcp-project-id:
+        required: true
+        description: GCP Project ID
+      slack-build-webhook:
+        required: true
     inputs:
       repository-base-name:
         required: true
@@ -31,7 +41,7 @@ jobs:
   docker-push:
     runs-on: ubuntu-latest
     env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_BUILD_WEBHOOK }}
+      SLACK_WEBHOOK_URL: ${{ secrets.slack-build-webhook }}
     outputs:
       sha-short: ${{ steps.vars-step.outputs.sha-short }}
     steps:
@@ -59,7 +69,7 @@ jobs:
       - id: gcp-auth
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.GCP_IMAGE_PUSH_SA_KEY }}
+          credentials_json: ${{ secrets.gcp-sa-json }}
 
       - name: Set up Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v0'
@@ -73,8 +83,8 @@ jobs:
         id: build-push-docker-img
         working-directory: ${{ inputs.working-directory }}
         env:
-          REGISTRY: ${{ inputs.docker-registry }}/${{ secrets.GKE_PROJECT_ID }}/${{ inputs.repository-base-name }}
-          GH_ACCESS_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
+          REGISTRY: ${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}
+          GH_ACCESS_TOKEN: ${{ secrets.gh-token }}
         run: |
           export LATEST=""
           if [[ "${{ inputs.is-latest }}" == "true" ]]; then
