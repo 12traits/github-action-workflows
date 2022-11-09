@@ -44,8 +44,6 @@ jobs:
   deploy-image:
     name: "Update docker image/tag to a k8s deployment"
     runs-on: "ubuntu-latest"
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.slack-build-webhook }}
     steps:
       - uses: actions/checkout@v3
       - id: gcp-auth
@@ -67,4 +65,5 @@ jobs:
         with: 
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
+          webhook-url: ${{ secrets.slack-build-webhook }}
         if: always()
