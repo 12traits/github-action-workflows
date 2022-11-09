@@ -2,13 +2,7 @@ name: kubernetes-deploy
 
 on:
   workflow_call:
-    secrets:
-      k8s-sa-json:
-        required: true
-        description: K8S access key in Json that have permissions to set image:tag to kubernetes deployments
-      gcp-project-id:
-        required: true
-        description: GCP Project ID
+    secrets: inherit
     inputs:
       deployment-image:
         required: true
@@ -49,7 +43,7 @@ jobs:
       - id: gcp-auth
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.k8s-sa-json }}
+          credentials_json: ${{ secrets.K8S_SET_IMAGE_SA_KEY }}
 
       - name: Set up Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v0'
@@ -59,7 +53,7 @@ jobs:
       - name: Deploy
         id: deploy-image
         run: |-
-          kubectl set image deployment ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ inputs.deployment-image }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
+          kubectl set image deployment ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ inputs.deployment-image }}=${{ inputs.docker-registry }}/${{ secrets.GKE_PROJECT_ID }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
           kubectl rollout status deployment/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
       - uses: act10ns/slack@v1
         with: 

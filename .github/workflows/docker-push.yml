@@ -1,15 +1,7 @@
 name: docker-push
 on:
   workflow_call:
-    secrets:
-      gh-token:
-        required: true
-      gcp-sa-json:
-        required: true
-        description: GCP access key in Json that have permissions to push images to repo
-      gcp-project-id:
-        required: true
-        description: GCP Project ID
+    secrets: inherit
     inputs:
       repository-base-name:
         required: true
@@ -67,7 +59,7 @@ jobs:
       - id: gcp-auth
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.gcp-sa-json }}
+          credentials_json: ${{ secrets.GCP_IMAGE_PUSH_SA_KEY }}
 
       - name: Set up Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v0'
@@ -81,8 +73,8 @@ jobs:
         id: build-push-docker-img
         working-directory: ${{ inputs.working-directory }}
         env:
-          REGISTRY: ${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}
-          GH_ACCESS_TOKEN: ${{ secrets.gh-token }}
+          REGISTRY: ${{ inputs.docker-registry }}/${{ secrets.GKE_PROJECT_ID }}/${{ inputs.repository-base-name }}
+          GH_ACCESS_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
         run: |
           export LATEST=""
           if [[ "${{ inputs.is-latest }}" == "true" ]]; then
