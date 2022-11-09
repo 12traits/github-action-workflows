@@ -10,7 +10,7 @@ on:
         required: true
         description: GCP Project ID
       slack-build-webhook:
-        required: true
+        required: false
     inputs:
       deployment-image:
         required: true

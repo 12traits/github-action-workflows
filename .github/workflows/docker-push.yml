@@ -11,7 +11,7 @@ on:
         required: true
         description: GCP Project ID
       slack-build-webhook:
-        required: true
+        required: false
     inputs:
       repository-base-name:
         required: true

@@ -6,7 +6,7 @@ on:
       gh-token:
         required: true
       slack-build-webhook:
-        required: true
+        required: false
 
 jobs:
   test:
