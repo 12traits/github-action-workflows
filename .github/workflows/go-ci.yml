@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_BUILD_WEBHOOK }}
     steps:          
       - uses: actions/setup-go@v3
         with:
@@ -40,11 +42,19 @@ jobs:
 
       - name: Test
         shell: bash
-        run: go test -v ./... 
+        run: go test -v ./...
+
+      - uses: act10ns/slack@v1
+        with: 
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: failure()
 
   lint:
     name: lint
     runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_BUILD_WEBHOOK }}
     steps:  
         - uses: actions/setup-go@v3
           with:
@@ -65,4 +75,8 @@ jobs:
           uses: golangci/golangci-lint-action@v3.2.0
           with:
             args: --timeout=5m --enable unparam
- 
+        - uses: act10ns/slack@v1
+          with: 
+            status: ${{ job.status }}
+            steps: ${{ toJson(steps) }}
+          if: failure()

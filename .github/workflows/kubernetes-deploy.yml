@@ -42,6 +42,8 @@ jobs:
   deploy-image:
     name: "Update docker image/tag to a k8s deployment"
     runs-on: "ubuntu-latest"
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_BUILD_WEBHOOK }}
     steps:
       - uses: actions/checkout@v3
       - id: gcp-auth
@@ -55,6 +57,12 @@ jobs:
       - run: |-
           gcloud container clusters get-credentials ${{ inputs.cluster }} --zone ${{ inputs.zone }}
       - name: Deploy
+        id: deploy-image
         run: |-
           kubectl set image deployment ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ inputs.deployment-image }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
           kubectl rollout status deployment/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
+      - uses: act10ns/slack@v1
+        with: 
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: always()

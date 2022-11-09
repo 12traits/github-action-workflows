@@ -38,6 +38,8 @@ on:
 jobs:
   docker-push:
     runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_BUILD_WEBHOOK }}
     outputs:
       sha-short: ${{ steps.vars-step.outputs.sha-short }}
     steps:
@@ -76,6 +78,7 @@ jobs:
 
       - name: Build and Push Image
         shell: bash
+        id: build-push-docker-img
         working-directory: ${{ inputs.working-directory }}
         env:
           REGISTRY: ${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}
@@ -91,3 +94,8 @@ jobs:
             $LATEST \
             -t $REGISTRY\:${{ steps.vars-step.outputs.branch }} .  && \
           docker push $REGISTRY --all-tags
+      - uses: act10ns/slack@v1
+        with: 
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: failure()
