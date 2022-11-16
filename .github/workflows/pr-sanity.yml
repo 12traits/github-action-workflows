@@ -1,0 +1,21 @@
+name: pr-sanity
+
+on:
+  workflow_call:
+    secrets:
+      gh-token:
+        required: true
+    inputs:
+      comment:
+        type: string
+        description: Comment to set when we close the PR
+        default: "You should use a release branch! https://12traits.atlassian.net/wiki/spaces/DASH1/pages/362348545/Git+Flow+Best+Practices#Release-Branch"
+
+jobs:
+    check-pr-base-head-ref:
+      runs-on: ubuntu-latest
+      if: github.event_name == 'pull_request' && github.head_ref == 'develop' && github.base_ref == 'master'
+      steps:
+        - uses: 12traits/close-pull-request@v3
+          with:
+            comment: ${{ inputs.comment }}
