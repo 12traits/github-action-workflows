@@ -19,3 +19,8 @@ jobs:
         - uses: 12traits/close-pull-request@v3
           with:
             comment: ${{ inputs.comment }}
+    always-true:
+      runs-on: ubuntu-latest
+      if: always()
+      steps:
+        - run: true
