@@ -53,9 +53,17 @@ jobs:
 
       - name: Set up Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v0'
-
-      - run: |-
-          gcloud container clusters get-credentials ${{ inputs.cluster }} --zone ${{ inputs.zone }}
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
+      - name: "Connect to cluster"
+        uses: google-github-actions/get-gke-credentials@v0
+        with:
+          cluster_name: ${{ inputs.cluster }}
+          location: ${{ inputs.zone }}
+          project_id: ${{ secrets.gcp-project-id }}
+          use_auth_provider: true
+      # - run: |-
+      #     gcloud container clusters get-credentials ${{ inputs.cluster }} --zone ${{ inputs.zone }}
       - name: Deploy
         id: deploy-docker-image
         run: |-
