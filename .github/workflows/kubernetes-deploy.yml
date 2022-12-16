@@ -61,7 +61,6 @@ jobs:
           cluster_name: ${{ inputs.cluster }}
           location: ${{ inputs.zone }}
           project_id: ${{ secrets.gcp-project-id }}
-          use_auth_provider: true
       # - run: |-
       #     gcloud container clusters get-credentials ${{ inputs.cluster }} --zone ${{ inputs.zone }}
       - name: Deploy
