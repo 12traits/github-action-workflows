@@ -21,7 +21,7 @@ jobs:
         id: vars-step
         run: |
           cd $GITHUB_WORKSPACE
-          export SEMVER=`echo "${{ github.event.head_commit.message }}" | grep "release" | cut -d '-' -f 2 | head -n 1`
+          export SEMVER=`echo "${{ github.event.head_commit.message }}" | grep -i "release" | cut -d '-' -f 2 | head -n 1`
           echo "semver=$SEMVER" >> $GITHUB_OUTPUT
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
