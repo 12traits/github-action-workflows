@@ -92,8 +92,8 @@ jobs:
             BUILDKIT_INLINE_CACHE=1
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.gh-token }}
-          env:
-            DOCKER_BUILDKIT: 1
+        env:
+          DOCKER_BUILDKIT: 1
       - uses: act10ns/slack@v1
         with: 
           status: ${{ job.status }}
