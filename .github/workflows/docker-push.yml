@@ -95,7 +95,7 @@ jobs:
             export LATEST="-t $REGISTRY:latest"
           fi
           docker buildx build -f Dockerfile --build-arg  GH_ACCESS_TOKEN=$GH_ACCESS_TOKEN \
-            --cache-to type=gha \
+            --cache-to "type=gha,mode=max" \
             --cache-from type=gha \
             --push \
             -t $REGISTRY\:${{ steps.vars-step.outputs.sha-short }} \
