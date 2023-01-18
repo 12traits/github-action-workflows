@@ -97,11 +97,11 @@ jobs:
           docker buildx build -f Dockerfile --build-arg  GH_ACCESS_TOKEN=$GH_ACCESS_TOKEN \
             --cache-to type=gha \
             --cache-from type=gha \
+            --push \
             -t $REGISTRY\:${{ steps.vars-step.outputs.sha-short }} \
             -t $REGISTRY\:${{ inputs.docker-tag }} \
             $LATEST \
-            -t $REGISTRY\:${{ steps.vars-step.outputs.branch }} .  && \
-          docker push $REGISTRY --all-tags
+            -t $REGISTRY\:${{ steps.vars-step.outputs.branch }} .
       - uses: act10ns/slack@v1
         with: 
           status: ${{ job.status }}
