@@ -89,6 +89,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             GH_ACCESS_TOKEN=${{ secrets.gh-token }}
+            BUILDKIT_INLINE_CACHE=1
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.gh-token }}
       - uses: act10ns/slack@v1
