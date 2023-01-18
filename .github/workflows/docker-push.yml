@@ -82,7 +82,7 @@ jobs:
       - name: cache docker cache
         uses: actions/cache@v1
         with: 
-          path: ${{ github.workspace }}/cache
+          path: /tmp/cache
           key: ${{ runner.os }}-docker-${{ hashfiles('cache/**') }}
           restore-keys: |
             ${{ runner.os }}-docker-
@@ -100,8 +100,8 @@ jobs:
             export LATEST="-t $REGISTRY:latest"
           fi
           docker buildx build -f Dockerfile --build-arg  GH_ACCESS_TOKEN=$GH_ACCESS_TOKEN \
-            --cache-from "type=local,src=$GITHUB_WORKSPACE/cache" \
-            --cache-to "type=local,dest=$GITHUB_WORKSPACE/cache" \
+            --cache-from "type=local,src=/tmp/cache" \
+            --cache-to "type=local,dest=/tmp/cache" \
             --push \
             -t $REGISTRY\:${{ steps.vars-step.outputs.sha-short }} \
             -t $REGISTRY\:${{ inputs.docker-tag }} \
