@@ -82,9 +82,9 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}:${{ steps.vars-step.outputs.sha-short }}
-            ${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}:${{ inputs.docker-tag }}
-            ${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}:${{ steps.vars-step.outputs.branch }}
+            ${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}:${{ steps.vars-step.outputs.sha-short }}
+            ${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}:${{ inputs.docker-tag }}
+            ${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}:${{ steps.vars-step.outputs.branch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
