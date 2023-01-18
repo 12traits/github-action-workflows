@@ -79,13 +79,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+      - name: cache docker cache
+        uses: actions/cache@v1
+        with: 
+          path: ${{ github.workspace }}/cache
+          key: ${{ runner.os }}-docker-${{ hashfiles('cache/**') }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-docker-
 
       - name: Build and Push Image
         shell: bash
@@ -100,8 +100,8 @@ jobs:
             export LATEST="-t $REGISTRY:latest"
           fi
           docker buildx build -f Dockerfile --build-arg  GH_ACCESS_TOKEN=$GH_ACCESS_TOKEN \
-            --cache-to "type=local,dest=/tmp/.buildx-cache" \
-            --cache-from "type=local,src=/tmp/.buildx-cache" \
+            --cache-from "type=local,src=$GITHUB_WORKSPACE/cache" \
+            --cache-to "type=local,dest=$GITHUB_WORKSPACE/cache" \
             --push \
             -t $REGISTRY\:${{ steps.vars-step.outputs.sha-short }} \
             -t $REGISTRY\:${{ inputs.docker-tag }} \
