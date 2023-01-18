@@ -87,6 +87,8 @@ jobs:
             ${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}:${{ steps.vars-step.outputs.branch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            GH_ACCESS_TOKEN=${{ secrets.gh-token }}
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.gh-token }}
       - uses: act10ns/slack@v1
