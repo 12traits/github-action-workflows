@@ -29,6 +29,10 @@ on:
         type: boolean
         description: Do we want to tag this image as latest
         default: false
+      context:
+        type: string
+        description: Docker context, path to where find the dockerfile..
+        default: .
     outputs:
       sha-short:
         value: ${{ jobs.docker-push.outputs.sha-short }}
@@ -79,7 +83,7 @@ jobs:
         id: build-push-docker-img
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ${{ inputs.context }}
           push: true
           tags: |
             ${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}:${{ steps.vars-step.outputs.sha-short }}
