@@ -68,7 +68,7 @@ jobs:
       - name: Deploy
         id: deploy-docker-image
         run: |-
-          kubectl set image ${{ inputs.deploymnet-type }} ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ inputs.deployment-image }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
+          kubectl set image ${{ inputs.deployment-type }} ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ inputs.deployment-image }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
           kubectl rollout status ${{ inputs.deployment-type}}/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
       - uses: act10ns/slack@v1
         with: 
