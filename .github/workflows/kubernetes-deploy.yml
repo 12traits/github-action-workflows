@@ -19,11 +19,16 @@ on:
       deployment-image:
         required: true
         type: string
-        description: K8s deployment image
+        description: K8s deployment name
       docker-image:
         required: true
         type: string
         description: Deployment docker image to deploy
+      container-name:
+        required: false
+        type: string
+        description: Container name
+        default: no-container-name
       docker-tag:
         required: true
         type: string
@@ -65,10 +70,19 @@ jobs:
           cluster_name: ${{ inputs.cluster }}
           location: ${{ inputs.zone }}
           project_id: ${{ secrets.gcp-project-id }}
+      - name: Assess container name
+        id: container
+        run: |
+          if [[ "${{ inputs.container-name }}" == "no-container-name" ]]; then
+            export CONTAINER_NAME="${{ inputs.docker-image }}"
+          else
+            export CONTAINER_NAME="${{ inputs.container-name }}"
+          fi
+          echo "name=$CONTAINER_NAME" >> $GITHUB_OUTPUT
       - name: Deploy
         id: deploy-docker-image
-        run: |-
-          kubectl set image ${{ inputs.deployment-type }} ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ inputs.deployment-image }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
+        run: |
+          kubectl set image ${{ inputs.deployment-type }} ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ steps.container.name }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
           kubectl rollout status ${{ inputs.deployment-type}}/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
       - uses: act10ns/slack@v1
         with: 
