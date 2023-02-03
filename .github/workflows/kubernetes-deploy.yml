@@ -74,11 +74,10 @@ jobs:
         id: container
         run: |
           if [[ "${{ inputs.container-name }}" == "no-container-name" ]]; then
-            export CONTAINER_NAME="${{ inputs.deployment-image }}"
+            echo "name=${{ inputs.deployment-image }}" >> $GITHUB_OUTPUT
           else
-            export CONTAINER_NAME="${{ inputs.container-name }}"
+            echo "name=${{ inputs.container-name }}" >> $GITHUB_OUTPUT
           fi
-          echo "name=$CONTAINER_NAME" >> $GITHUB_OUTPUT
       - name: Deploy
         id: deploy-docker-image
         run: |
