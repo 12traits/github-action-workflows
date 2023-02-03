@@ -74,7 +74,7 @@ jobs:
         id: container
         run: |
           if [[ "${{ inputs.container-name }}" == "no-container-name" ]]; then
-            export CONTAINER_NAME="${{ inputs.docker-image }}"
+            export CONTAINER_NAME="${{ inputs.deployment-image }}"
           else
             export CONTAINER_NAME="${{ inputs.container-name }}"
           fi
