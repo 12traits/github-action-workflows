@@ -43,7 +43,7 @@ on:
 
 jobs:
   docker-push:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       sha-short: ${{ steps.vars-step.outputs.sha-short }}
     steps:
