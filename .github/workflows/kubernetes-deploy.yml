@@ -14,7 +14,7 @@ on:
     inputs:
       deployment-type:
         type: string
-        description: Type of K8s object (Deployment, Statefulset, ..)
+        description: Type of K8s object (Deployment, Statefulset, CronJob)
         default: deployment
       deployment-image:
         required: true
