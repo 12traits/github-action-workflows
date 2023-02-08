@@ -33,6 +33,10 @@ on:
         type: string
         description: Docker context, path to where find the dockerfile..
         default: .
+      file:
+        type: string
+        description: Dockerfile name
+        default: Dockerfile
     outputs:
       sha-short:
         value: ${{ jobs.docker-push.outputs.sha-short }}
@@ -84,6 +88,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ${{ inputs.context }}
+          file: ${{ inputs.file }}
           push: true
           tags: |
             ${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.repository-base-name }}:${{ steps.vars-step.outputs.sha-short }}
