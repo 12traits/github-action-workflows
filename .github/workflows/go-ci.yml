@@ -24,16 +24,8 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.19
+          cache: true
       - uses: actions/checkout@v3
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-${{ github.repository }}-go
-          restore-keys: |
-            ${{ runner.os }}-${{ github.repository }}-go
-
       - name: Granting private modules access
         env:
           ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
@@ -68,6 +60,7 @@ jobs:
         - uses: actions/setup-go@v3
           with:
             go-version: 1.19
+            cache: true
 
         - uses: actions/checkout@v3
 
