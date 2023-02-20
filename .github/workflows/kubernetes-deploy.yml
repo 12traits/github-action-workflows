@@ -28,7 +28,12 @@ on:
         required: false
         type: string
         description: Container name
-        default: no-container-name
+        default: ''
+      init-container-name:
+        required: false
+        type: string
+        description: Init Container name
+        default: ''
       docker-tag:
         required: true
         type: string
@@ -73,15 +78,22 @@ jobs:
       - name: Assess container name
         id: container
         run: |
-          if [[ "${{ inputs.container-name }}" == "no-container-name" ]]; then
+          if [[ "${{ inputs.container-name }}" == "" ]]; then
             echo "name=${{ inputs.deployment-image }}" >> $GITHUB_OUTPUT
           else
             echo "name=${{ inputs.container-name }}" >> $GITHUB_OUTPUT
           fi
+          if [[ "${{ inputs.init-container-name }}" == "" ]]; then
+            echo "init-cli=" >> $GITHUB_OUTPUT
+          else
+            echo "init-cli=${{ inputs.init-container-name }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
+          fi
       - name: Deploy
         id: deploy-docker-image
         run: |
-          kubectl set image ${{ inputs.deployment-type }} ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} ${{ steps.container.outputs.name }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}
+          kubectl set image ${{ inputs.deployment-type }} ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} \
+            ${{ steps.container.outputs.name }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }} \
+            ${{ steps.container.outputs.init-cli }}
           kubectl rollout status ${{ inputs.deployment-type}}/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
       - uses: act10ns/slack@v1
         with: 
