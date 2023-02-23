@@ -72,7 +72,7 @@ jobs:
         # and executing it in the root of the project
         - name: golangci-lint
           id: go-lint
-          uses: golangci/golangci-lint-action@v3.2.0
+          uses: golangci/golangci-lint-action@v3.4.0
           with:
             args: --timeout=5m --enable unparam
             working-directory: ${{ inputs.workdir }}
