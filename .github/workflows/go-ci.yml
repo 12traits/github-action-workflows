@@ -75,7 +75,7 @@ jobs:
           id: go-lint
           uses: golangci/golangci-lint-action@v3.4.0
           with:
-            args: --timeout=5m --enable unparam
+            args: --timeout=15m --enable unparam
             working-directory: ${{ inputs.workdir }}
         - uses: act10ns/slack@v1
           with: 
