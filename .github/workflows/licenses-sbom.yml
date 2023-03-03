@@ -38,7 +38,8 @@ jobs:
         # perform secret check & put boolean result as an output
         shell: bash
         run: |
-          if [[ "${{ secrets.k8s-key }}" = "" ]]; then
+          SECRET='${{ secrets.k8s-key }}'
+          if [[ $SECRET = "" ]]; then
             echo "available=false" >> $GITHUB_OUTPUT;
           else
             echo "available=true" >> $GITHUB_OUTPUT;
