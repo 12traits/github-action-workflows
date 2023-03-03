@@ -33,8 +33,18 @@ jobs:
     runs-on: self-hosted
     needs: sbom-and-licenses
     steps:
+      - name: Check for Secret availability
+        id: secret-check
+        # perform secret check & put boolean result as an output
+        shell: bash
+        run: |
+          if [ "${{ secrets.k8s-key }}" != '' ]; then
+            echo "available=true" >> $GITHUB_OUTPUT;
+          else
+            echo "available=false" >> $GITHUB_OUTPUT;
+          fi
       - name: Init git vars
-        if: secrets.k8s-key != ''
+        if: ${{ steps.secret-check.outputs.available == 'true' }}
         shell: bash
         id: vars-step
         env:
@@ -46,31 +56,31 @@ jobs:
             echo "sha-short=`echo ${{ github.event.pull_request.head.sha }} | cut -c1-7`" >> $GITHUB_OUTPUT
           fi
       - id: gcp-auth
-        if: secrets.k8s-key != ''
+        if: ${{ steps.secret-check.outputs.available == 'true' }}
         uses: google-github-actions/auth@v0
         with:
           credentials_json: ${{ secrets.k8s-key }}
       - name: Set up Cloud SDK
-        if: secrets.k8s-key != ''
+        if: ${{ steps.secret-check.outputs.available == 'true' }}
         uses: 'google-github-actions/setup-gcloud@v0'
       - uses: actions/download-artifact@v3
-        if: secrets.k8s-key != ''
+        if: ${{ steps.secret-check.outputs.available == 'true' }}
         with:
           name: licenses-report
           path: /tmp/licenses-report.json
       - name: Upload licenses report to GCS
-        if: secrets.k8s-key != ''
+        if: ${{ steps.secret-check.outputs.available == 'true' }}
         uses: 'google-github-actions/upload-cloud-storage@v0'
         with:
           path: '/tmp/licenses-report.json'
           destination: '12traits-ci/${{ github.repository.name }}/${{ steps.vars-step.outputs.sha-short }}/licenses-report.json'
       - uses: actions/download-artifact@v3
-        if: secrets.k8s-key != ''
+        if: ${{ steps.secret-check.outputs.available == 'true' }}
         with:
           name: sbom.spdx
           path: /tmp/sbom.spdx
       - name: Upload SBOM report to GCS
-        if: secrets.k8s-key != ''
+        if: ${{ steps.secret-check.outputs.available == 'true' }}
         uses: 'google-github-actions/upload-cloud-storage@v0'
         with:
           path: '/tmp/sbom.spdx'
