@@ -31,7 +31,7 @@ jobs:
           path: /tmp/licenses-report.json
   upload:
     runs-on: self-hosted
-    if: secrets.k8s-key != ''
+    if: ${{ secrets.k8s-key }} != ''
     steps:
       - name: Init git vars
         shell: bash
