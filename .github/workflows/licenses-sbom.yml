@@ -5,6 +5,7 @@ on:
     secrets:
       gh-token:
         required: true
+    
 jobs:
   sbom:
     runs-on: self-hosted
@@ -15,10 +16,7 @@ jobs:
         with:
           path: .
           artifact-name: sbom.spdx
-  licenses:
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v3
+          output-file: /tmp/sbom.spdx
       - name: Perform checks
         id: license-check
         uses: 12traits/license_approval@master
