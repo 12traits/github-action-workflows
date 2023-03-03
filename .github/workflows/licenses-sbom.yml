@@ -5,9 +5,11 @@ on:
     secrets:
       gh-token:
         required: true
+      k8s-key:
+        required: false
     
 jobs:
-  sbom:
+  sbom-and-licenses:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
@@ -27,3 +29,42 @@ jobs:
         with:
           name: licenses-report
           path: /tmp/licenses-report.json
+  upload:
+    runs-on: self-hosted
+    if: secrets.k8s-key != ''
+    steps:
+      - name: Init git vars
+        shell: bash
+        id: vars-step
+        env:
+          GH_TOKEN: ${{ secrets.gh-token }}
+        run: |
+          if [[ $GITHUB_REF = *refs/heads/* ]]; then
+            echo "sha-short=`echo $GITHUB_SHA | cut -c1-7`" >> $GITHUB_OUTPUT
+          else
+            echo "sha-short=`echo ${{ github.event.pull_request.head.sha }} | cut -c1-7`" >> $GITHUB_OUTPUT
+          fi
+      - id: gcp-auth
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.k8s-key }}
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v0'
+      - uses: actions/download-artifact@v3
+        with:
+          name: licenses-report
+          path: /tmp/licenses-report.json
+      - name: Upload licenses report to GCS
+        uses: 'google-github-actions/upload-cloud-storage@v0'
+        with:
+          path: '/tmp/licenses-report.json'
+          destination: '12traits-ci/${{ github.repository.name }}/${{ steps.vars-step.outputs.sha-short }}/licenses-report.json'
+      - uses: actions/download-artifact@v3
+        with:
+          name: sbom.spdx
+          path: /tmp/sbom.spdx
+      - name: Upload SBOM report to GCS
+        uses: 'google-github-actions/upload-cloud-storage@v0'
+        with:
+          path: '/tmp/sbom.spdx'
+          destination: '12traits-ci/${{ github.repository.name }}/${{ steps.vars-step.outputs.sha-short }}/sbom.spdx'
