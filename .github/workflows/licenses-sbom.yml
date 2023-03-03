@@ -32,6 +32,7 @@ jobs:
   upload:
     runs-on: self-hosted
     continue-on-error: true
+    needs: sbom-and-licenses
     steps:
       - name: Init git vars
         shell: bash
