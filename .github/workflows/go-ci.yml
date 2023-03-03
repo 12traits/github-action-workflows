@@ -71,12 +71,24 @@ jobs:
 
         # run locally by installing golangci-lint https://golangci-lint.run/usage/install/#local-installation
         # and executing it in the root of the project
-        - name: golangci-lint
-          id: go-lint
-          uses: golangci/golangci-lint-action@v3.4.0
-          with:
-            args: --timeout=15m --enable unparam
-            working-directory: ${{ inputs.workdir }}
+        # - name: golangci-lint
+        #   id: go-lint
+        #   uses: golangci/golangci-lint-action@v3.4.0
+        #   with:
+        #     args: --timeout=15m --enable unparam
+        #     working-directory: ${{ inputs.workdir }}
+        - name: install go ci deps
+          run: |
+            go install honnef.co/go/tools/cmd/staticcheck@latest
+            go install mvdan.cc/unparam@latest
+        - name: verify dependencies 
+          run: go mod verify
+        - name: go vet
+          run: go vet ./...
+        - name: staticcheck
+          run: staticcheck ./...
+        - name: unparam
+          run: unparam ./...
         - uses: act10ns/slack@v1
           with: 
             status: ${{ job.status }}
