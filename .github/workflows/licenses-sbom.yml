@@ -82,4 +82,5 @@ jobs:
           path: '/tmp/${{ steps.vars-step.outputs.sha-short }}/'
           destination: '12traits-ci/${{ github.event.repository.name }}'
           glob: '*'
+          # if we want to upload with the short-sha folder, just remove this line below.
           parent: false
