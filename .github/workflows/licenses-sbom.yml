@@ -82,3 +82,4 @@ jobs:
           path: '/tmp/${{ steps.vars-step.outputs.sha-short }}/'
           destination: '12traits-ci/${{ github.event.repository.name }}'
           glob: '*'
+          parent: false
