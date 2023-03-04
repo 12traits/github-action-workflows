@@ -5,7 +5,7 @@ on:
     secrets:
       gh-token:
         required: true
-      k8s-key:
+      gcs-token:
         required: false
     
 jobs:
@@ -39,7 +39,7 @@ jobs:
         # perform secret check & put boolean result as an output
         shell: bash
         run: |
-          SECRET='${{ secrets.k8s-key }}'
+          SECRET='${{ secrets.gcs-token }}'
           if [[ $SECRET = "" ]]; then
             echo "available=false" >> $GITHUB_OUTPUT;
           else
@@ -61,7 +61,7 @@ jobs:
         if: ${{ steps.secret-check.outputs.available == 'true' }}
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.k8s-key }}
+          credentials_json: ${{ secrets.gcs-token }}
       - name: Set up Cloud SDK
         if: ${{ steps.secret-check.outputs.available == 'true' }}
         uses: 'google-github-actions/setup-gcloud@v0'
