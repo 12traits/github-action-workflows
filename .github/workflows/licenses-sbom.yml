@@ -79,5 +79,6 @@ jobs:
         if: ${{ steps.secret-check.outputs.available == 'true' }}
         uses: 'google-github-actions/upload-cloud-storage@v0'
         with:
-          path: '/tmp/${{ steps.vars-step.outputs.sha-short }}/*'
+          path: '/tmp/${{ steps.vars-step.outputs.sha-short }}'
           destination: '12traits-ci/${{ github.event.repository.name }}'
+          glob: '*'
