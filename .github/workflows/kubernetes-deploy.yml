@@ -83,6 +83,9 @@ jobs:
           else
             echo "name=${{ inputs.container-name }}" >> $GITHUB_OUTPUT
           fi
+      - name: Assess init container
+        id: init-container
+        run: |
           if [[ "${{ inputs.init-container-name }}" == "" ]]; then
             echo "init-cli=" >> $GITHUB_OUTPUT
           else
@@ -93,8 +96,23 @@ jobs:
         run: |
           kubectl set image ${{ inputs.deployment-type }} ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} \
             ${{ steps.container.outputs.name }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }} \
-            ${{ steps.container.outputs.init-cli }}
+            ${{ steps.init-container.outputs.init-cli }}
           kubectl rollout status ${{ inputs.deployment-type}}/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
+      # some pods have multiple containers
+      # right now all containers use same docker image and docker tag
+      # but that might change in the future, and for debugging or hotfixing
+      # we want to store the version deployed per container so it's all separated and easier
+      - name: Save deployment state into configmap
+        run: |
+          DEPLOYED_DATE=$(date '+%Y-%m-%d %H:%M:%S')
+          kubectl create configmap deployment-${{ steps.container.outputs.name }} \
+            --from-literal version="${{ inputs.docker-tag }}" \
+            --from-literal deployed_at="$DEPLOYED_DATE"
+            --namespace ${{ inputs.namespace }}
+          if [[ $? -ne 0 ]]; then
+            kubectl patch configmap deployment-${{ steps.container.outputs.name }} \
+              -p '{"data": {"version": "${{ inputs.docker-tag }}", "deployed_at": "'"$DEPLOYED_DATE"'"}}'
+          fi
       - uses: act10ns/slack@v1
         with: 
           status: ${{ job.status }}
