@@ -111,7 +111,8 @@ jobs:
             --namespace ${{ inputs.namespace }}
           if [[ $? -ne 0 ]]; then
             kubectl patch configmap deployment-${{ steps.container.outputs.name }} \
-              -p '{"data": {"version": "${{ inputs.docker-tag }}", "deployed_at": "'"$DEPLOYED_DATE"'"}}'
+              -p '{"data": {"version": "${{ inputs.docker-tag }}", "deployed_at": "'"$DEPLOYED_DATE"'"}}' \
+              --namespace ${{ inputs.namespace }}
           fi
       - uses: act10ns/slack@v1
         with: 
