@@ -107,7 +107,7 @@ jobs:
           DEPLOYED_DATE=$(date '+%Y-%m-%d %H:%M:%S')
           kubectl create configmap deployment-${{ steps.container.outputs.name }} \
             --from-literal version="${{ inputs.docker-tag }}" \
-            --from-literal deployed_at="$DEPLOYED_DATE"
+            --from-literal deployed_at="$DEPLOYED_DATE" \
             --namespace ${{ inputs.namespace }}
           if [[ $? -ne 0 ]]; then
             kubectl patch configmap deployment-${{ steps.container.outputs.name }} \
