@@ -113,7 +113,6 @@ jobs:
           kubectl patch configmap deployment-${{ steps.container.outputs.name }} \
             -p '{"data": {"version": "${{ inputs.docker-tag }}", "deployed_at": "'"$DEPLOYED_DATE"'"}}' \
             --namespace ${{ inputs.namespace }}
-
       - uses: act10ns/slack@v1
         with: 
           status: ${{ job.status }}
