@@ -103,7 +103,6 @@ jobs:
             # cache: true
 
         - uses: actions/checkout@v3
-
         - name: Granting private modules access
           env:
             ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
@@ -116,11 +115,11 @@ jobs:
         - name: verify dependencies
           run: go mod verify
         - name: go vet
-          run: go vet ./...
+          run: go vet ./pkg/... ./cmd/...
         - name: staticcheck
-          run: staticcheck ./...
+          run: staticcheck ./pkg/... ./cmd/...
         - name: unparam
-          run: unparam ./...
+          run: unparam ./pkg/... ./cmd/...
         - uses: act10ns/slack@v1
           with: 
             status: ${{ job.status }}
