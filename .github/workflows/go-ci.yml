@@ -16,6 +16,10 @@ on:
         type: string
         description: What type you prefer
         default: golangci
+      path:
+        type: string
+        description: Path to look at from within the workdir
+        default: ./pkg/... ./cmd/...
 
 jobs:
   test:
@@ -115,11 +119,11 @@ jobs:
         - name: verify dependencies
           run: go mod verify
         - name: go vet
-          run: go vet ./pkg/... ./cmd/...
+          run: go vet ${{ inputs.path }}
         - name: staticcheck
-          run: staticcheck ./pkg/... ./cmd/...
+          run: staticcheck ${{ inputs.path }}
         - name: unparam
-          run: unparam ./pkg/... ./cmd/...
+          run: unparam ${{ inputs.path }}
         - uses: act10ns/slack@v1
           with: 
             status: ${{ job.status }}
