@@ -55,47 +55,9 @@ jobs:
           steps: ${{ toJson(steps) }}
           webhook-url: ${{ secrets.slack-build-webhook }}
         if: failure()
-
-  golangci-lint:
-    name: golangci-lint
-    runs-on: self-hosted
-    if: inputs.linter == 'golangci'
-    defaults:
-      run:
-        shell: bash
-        working-directory: ${{ inputs.workdir }}
-    steps:  
-        - uses: actions/setup-go@v3
-          with:
-            go-version: '1.20'
-            # cache: true
-
-        - uses: actions/checkout@v3
-
-        - name: Granting private modules access
-          env:
-            ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
-          run: |
-              git config --global url."https://$ORG_GITHUB_TOKEN@github.com/12traits".insteadOf "https://github.com/12traits"           
-
-        # run locally by installing golangci-lint https://golangci-lint.run/usage/install/#local-installation
-        # and executing it in the root of the project
-        - name: golangci-lint
-          id: go-lint
-          uses: golangci/golangci-lint-action@v3.4.0
-          with:
-            args: --timeout=15m --enable unparam
-            working-directory: ${{ inputs.workdir }}
-        - uses: act10ns/slack@v1
-          with: 
-            status: ${{ job.status }}
-            steps: ${{ toJson(steps) }}
-            webhook-url: ${{ secrets.slack-build-webhook }}
-          if: failure()
   manual-lint:
     name: manual-lint
     runs-on: self-hosted
-    if: inputs.linter != 'golangci'
     defaults:
       run:
         shell: bash
