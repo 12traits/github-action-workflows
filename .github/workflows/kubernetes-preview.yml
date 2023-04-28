@@ -51,7 +51,7 @@ on:
       
 jobs:
   preview-deployment:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       internal-addr: ${{ steps.kubernetes-service.outputs.service-addr }}
       gateway-url: ${{ steps.kubernetes-ingress.outputs.gateway-addr }}
