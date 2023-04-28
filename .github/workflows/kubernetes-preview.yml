@@ -91,6 +91,7 @@ jobs:
           yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/service.yaml
           yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/service.yaml
           yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/service.yaml
+          yq '.metadata.labels.preview="true"' -i /tmp/service.yaml
           PORT=`cat /tmp/service.yaml | yq '.spec.ports.[0].port'`
           echo "addr=${{ steps.deployment-name.outputs.name }}:$PORT" >> $GITHUB_OUTPUT
           cat /tmp/service.yaml
@@ -105,6 +106,7 @@ jobs:
           yq '.metadata.name="${{ steps.deployment-name.outputs.name }}-ingress"' -i /tmp/ingress.yaml
           yq '.spec.rules[].http.paths.[0].backend.service.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/ingress.yaml
           yq '.spec.rules[].http.paths.[0].path|="/previews/${{ steps.suffix.outputs.sanitized-suffix }}"+.' -i /tmp/ingress.yaml
+          yq '.metadata.labels.preview="true"' -i /tmp/ingress.yaml
           GATEWAY=`cat /tmp/ingress.yaml | yq '.spec.rules.[0].host'`
           echo "gateway-addr=${GATEWAY/12traits.com/solsten.io}" >> $GITHUB_OUTPUT
           cat /tmp/ingress.yaml 
@@ -118,5 +120,6 @@ jobs:
           yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
           yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
           yq '.spec.template.spec.containers.[0].name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
+          yq '.metadata.labels.preview="true"' -i /tmp/deployment.yaml
           cat /tmp/deployment.yaml
           kubectl apply -f /tmp/ingress.yaml
