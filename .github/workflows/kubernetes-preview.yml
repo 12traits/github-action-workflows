@@ -86,6 +86,7 @@ jobs:
       - name: Create service
         id: kubernetes-service
         run: |
+          kubectl delete service --namespace ${{ inputs.namespace }} ${{ steps.deployment-name.outputs.name }} || true
           kubectl get service --namespace ${{ inputs.namespace }} ${{ inputs.deployment-target }} -o yaml > /tmp/service.yaml
           yq 'del(.metadata.annotations.[], .spec.clusterIP, .spec.clusterIPs, .metadata.creationTimestamp, .metadata.resourceVersion, .metadata.uid, .status)' -i /tmp/service.yaml
           yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/service.yaml
@@ -100,6 +101,7 @@ jobs:
         id: kubernetes-ingress
         if: always()
         run: |
+          kubectl delete service --namespace ${{ inputs.namespace }} ${{ steps.deployment-name.outputs.name }}-ingress || true
           kubectl get ingress --namespace ${{ inputs.namespace }} ${{ inputs.deployment-target}}-ingress -o yaml > /tmp/ingress.yaml
           yq 'del(.metadata.creationTimestamp, .metadata.generation, .metadata.annotations."meta.helm.sh/release-name", .metadata.annotations."meta.helm.sh/release-namespace", .metadata.resourceVersion, .metadata.uid, .status)' -i /tmp/ingress.yaml
           yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/ingress.yaml
@@ -114,6 +116,7 @@ jobs:
       - name: Create Deployment
         id: kubernetes-deployment
         run: |
+          kubectl delete deployment --namespace ${{ inputs.namespace }} ${{ steps.deployment-name.outputs.name }} || true
           kubectl get deployment --namespace ${{ inputs.namespace }} ${{ inputs.deployment-target }} -o yaml > /tmp/deployment.yaml
           yq 'del(.metadata.creationTimestamp, .metadata.generation, .metadata.annotations, .metadata.resourceVersion, .metadata.uid, .status)' -i /tmp/deployment.yaml
           yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/deployment.yaml
