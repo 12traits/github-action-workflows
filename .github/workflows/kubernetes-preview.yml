@@ -1,0 +1,122 @@
+name: kubernetes-preview
+on:
+  workflow_call:
+    secrets:
+      k8s-sa-json:
+        required: true
+        description: K8S access key in Json that have permissions to set image:tag to kubernetes deployments
+      gcp-project-id:
+        required: true
+        description: GCP Project ID
+      slack-build-webhook:
+        required: false
+    inputs:
+      deployment-target:
+        required: true
+        type: string
+        description: K8s deployment name we want to clone
+      docker-tag:
+        required: true
+        type: string
+        description: Docker image tag to deploy
+      cluster:
+        required: true
+        type: string
+        description: Cluster name 
+      namespace:
+        required: true
+        type: string
+        description: K8s namespace where the deployment was made
+      zone:
+        type: string
+        description: Cluster zone
+        default: europe-west1-b
+      suffix:
+        type: string
+        description: Custom suffix given by user for ingresses, deployment name and service
+    outputs:
+      deployment-name:
+        value: ${{ jobs.preview-deployment.outputs.deployment-name }}
+        description: Generated deployment name
+      gateway-url:
+        value: ${{ jobs.preview-deployment.outputs.gateway-url }}
+        description: Gateway url if any ingress was found
+      internal-addr:
+        value: ${{ jobs.preview-deployment.outputs.internal-addr }}
+        description: Internal address of this service
+      
+jobs:
+  preview-deployment:
+    runs-on: ubuntu-latest
+    outputs:
+      internal-addr: ${{ steps.kubernetes-service.outputs.addr }}
+      gateway-url: ${{ steps.kubernetes-ingress.outputs.gateway-addr }}
+      deployment-name: ${{ steps.deployment-name.outputs.name }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: gcp-auth
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.k8s-sa-json }}
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v0'
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
+      - name: "Connect to cluster"
+        uses: google-github-actions/get-gke-credentials@v0
+        with:
+          cluster_name: ${{ inputs.cluster }}
+          location: ${{ inputs.zone }}
+          project_id: ${{ secrets.gcp-project-id }}
+      - name: Get suffix
+        id: suffix
+        run: |
+          slugify () {
+            echo "$1" | iconv -t ascii//TRANSLIT | sed -r s/[~\^]+//g | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z
+          }
+          if [[ "${{ inputs.suffix }}" == "" ]]; then
+            echo "sanitized-suffix=${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "sanitized-suffix=slugify(${{ inputs.suffix }})" >> $GITHUB_OUTPUT
+          fi
+      - name: Get deployment-name
+        id: deployment-name
+        run: |
+          echo "name=${{ inputs.deployment-target }}-${{ steps.suffix.outputs.sanitized-suffix }}" >> $GITHUB_OUTPUT
+      - name: Create service
+        id: kubernetes-service
+        run: |
+          kubectl get service --namespace ${{ inputs.namespace }} ${{ inputs.deployment-target }} -o yaml > /tmp/service.yaml
+          yq 'del(.metadata.annotations.[], .spec.clusterIP, .spec.clusterIPs, .metadata.creationTimestamp, .metadata.resourceVersion, .metadata.uid, .status)' -i /tmp/service.yaml
+          yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/service.yaml
+          yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/service.yaml
+          yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/service.yaml
+          PORT=`cat /tmp/service.yaml | yq '.spec.ports.[0].port'`
+          echo "addr=${{ steps.deployment-name.outputs.name }}:$PORT" >> $GITHUB_OUTPUT
+          cat /tmp/service.yaml
+          kubectl apply -f /tmp/service.yaml
+      - name: Create ingress
+        id: kubernetes-ingress
+        if: always()
+        run: |
+          kubectl get ingress --namespace ${{ inputs.namespace }} ${{ inputs.deployment-target}}-ingress -o yaml > /tmp/ingress.yaml
+          yq 'del(.metadata.creationTimestamp, .metadata.generation, .metadata.annotations."meta.helm.sh/release-name", .metadata.annotations."meta.helm.sh/release-namespace", .metadata.resourceVersion, .metadata.uid, .status)' -i /tmp/ingress.yaml
+          yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/ingress.yaml
+          yq '.metadata.name="${{ steps.deployment-name.outputs.name }}-ingress"' -i /tmp/ingress.yaml
+          yq '.spec.rules[].http.paths.[0].backend.service.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/ingress.yaml
+          yq '.spec.rules[].http.paths.[0].path|="/previews/${{ steps.suffix.outputs.sanitized-suffix }}"+.' -i /tmp/ingress.yaml
+          GATEWAY=`cat /tmp/ingress.yaml | yq '.spec.rules.[0].host'`
+          echo "gateway-addr=${GATEWAY/12traits.com/solsten.io}" >> $GITHUB_OUTPUT
+          cat /tmp/ingress.yaml 
+          kubectl apply -f /tmp/ingress.yaml
+      - name: Create Deployment
+        id: kubernetes-deployment
+        run: |
+          kubectl get deployment --namespace ${{ inputs.namespace }} ${{ inputs.deployment-target }} -o yaml > /tmp/deployment.yaml
+          yq 'del(.metadata.creationTimestamp, .metadata.generation, .metadata.annotations, .metadata.resourceVersion, .metadata.uid, .status)' -i /tmp/deployment.yaml
+          yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i ./tmp/deployment.yaml
+          yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
+          yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
+          yq '.spec.template.spec.containers.[0].name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
+          cat /tmp/deployment.yaml
+          kubectl apply -f /tmp/ingress.yaml
