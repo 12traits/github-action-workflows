@@ -53,10 +53,10 @@ jobs:
   preview-deployment:
     runs-on: ubuntu-latest
     outputs:
-      internal-addr: ${{ steps.kubernetes-service.outputs.addr }}
+      internal-addr: ${{ steps.kubernetes-service.outputs.service-addr }}
       gateway-url: ${{ steps.kubernetes-ingress.outputs.gateway-addr }}
       deployment-name: ${{ steps.deployment-name.outputs.name }}
-      expiration-date: ${{ steps.expiration-ts.outputs.date-end}}
+      expiration-date: ${{ steps.expiration-ts.outputs.date-end }}
     steps:
       - uses: actions/checkout@v3
       - id: gcp-auth
@@ -73,14 +73,14 @@ jobs:
           cluster_name: ${{ inputs.cluster }}
           location: ${{ inputs.zone }}
           project_id: ${{ secrets.gcp-project-id }}
-      - name: Get suffix
-        id: suffix
+      - name: Get code
+        id: code
         run: |
           echo "code=${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
       - name: Get deployment-name
         id: deployment-name
         run: |
-          echo "name=${{ inputs.deployment-target }}-${{ steps.suffix.outputs.code }}" >> $GITHUB_OUTPUT
+          echo "name=${{ inputs.deployment-target }}-${{ steps.code.outputs.code }}" >> $GITHUB_OUTPUT
       - name: Get expiration timestamp
         id: expiration-ts
         run: |
@@ -103,7 +103,7 @@ jobs:
           yq '.metadata.labels.preview="true"' -i /tmp/service.yaml
           yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/service.yaml
           PORT=`cat /tmp/service.yaml | yq '.spec.ports.[0].port'`
-          echo "addr=${{ steps.deployment-name.outputs.name }}:$PORT" >> $GITHUB_OUTPUT
+          echo "service-addr=${{ steps.deployment-name.outputs.name }}:$PORT" >> $GITHUB_OUTPUT
           cat /tmp/service.yaml
           kubectl apply -f /tmp/service.yaml
       - name: Create ingress
@@ -116,7 +116,7 @@ jobs:
           yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/ingress.yaml
           yq '.metadata.name="${{ steps.deployment-name.outputs.name }}-ingress"' -i /tmp/ingress.yaml
           yq '.spec.rules[].http.paths.[0].backend.service.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/ingress.yaml
-          yq '.spec.rules[].http.paths.[0].path|="/previews/${{ steps.suffix.outputs.code }}"+.' -i /tmp/ingress.yaml
+          yq '.spec.rules[].http.paths.[0].path|="/previews/${{ steps.code.outputs.code }}"+.' -i /tmp/ingress.yaml
           yq '.metadata.labels.preview="true"' -i /tmp/ingress.yaml
           yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/ingress.yaml
           GATEWAY=`cat /tmp/ingress.yaml | yq '.spec.rules.[0].host'`
@@ -138,3 +138,14 @@ jobs:
           yq '.spec.template.spec.containers.[0].image |= sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}")' -i /tmp/deployment.yaml
           cat /tmp/deployment.yaml
           kubectl apply -f /tmp/deployment.yaml
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Your preview for ${{ inputs.deployment-target }} has been generated :rocket: 
+            It will be there until ${{ steps.expiration-ts.outputs.date-end }}.
+            Deployment has been created with the following name: ${{ steps.deployment-name.outputs.name }}.
+            Address to connect to your service is: ${{ steps.kubernetes-service.outputs.service-addr }}
+            Gateway path (if any) should be: ${{ steps.kubernetes-ingress.outputs.gateway-addr }}
+
+
