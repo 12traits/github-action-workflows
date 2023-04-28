@@ -116,11 +116,11 @@ jobs:
         run: |
           kubectl get deployment --namespace ${{ inputs.namespace }} ${{ inputs.deployment-target }} -o yaml > /tmp/deployment.yaml
           yq 'del(.metadata.creationTimestamp, .metadata.generation, .metadata.annotations, .metadata.resourceVersion, .metadata.uid, .status)' -i /tmp/deployment.yaml
-          yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i ./tmp/deployment.yaml
+          yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/deployment.yaml
           yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
           yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
           yq '.spec.template.spec.containers.[0].name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
           yq '.metadata.labels.preview="true"' -i /tmp/deployment.yaml
           yq '.spec.template.spec.containers.[0].image | sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}")' -i /tmp/deployment.yaml
           cat /tmp/deployment.yaml
-          kubectl apply -f /tmp/ingress.yaml
+          kubectl apply -f /tmp/deployment.yaml
