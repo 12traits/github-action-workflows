@@ -121,5 +121,6 @@ jobs:
           yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
           yq '.spec.template.spec.containers.[0].name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
           yq '.metadata.labels.preview="true"' -i /tmp/deployment.yaml
+          yq '.spec.template.spec.containers.[0].image | sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}")' -i /tmp/deployment.yaml
           cat /tmp/deployment.yaml
           kubectl apply -f /tmp/ingress.yaml
