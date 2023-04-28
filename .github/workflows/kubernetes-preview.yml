@@ -77,7 +77,7 @@ jobs:
           if [[ "${{ inputs.suffix }}" == "" ]]; then
             echo "sanitized-suffix=${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
           else
-            echo "sanitized-suffix=slugify(${{ inputs.suffix }})" >> $GITHUB_OUTPUT
+            echo "sanitized-suffix=`slugify ${{ inputs.suffix }}`" >> $GITHUB_OUTPUT
           fi
       - name: Get deployment-name
         id: deployment-name
