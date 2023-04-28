@@ -31,9 +31,10 @@ on:
         type: string
         description: Cluster zone
         default: europe-west1-b
-      suffix:
+      expiration:
         type: string
-        description: Custom suffix given by user for ingresses, deployment name and service
+        description: Expiration in days (1, 2, 3, 5 or 8)
+        default: "3"
     outputs:
       deployment-name:
         value: ${{ jobs.preview-deployment.outputs.deployment-name }}
@@ -44,6 +45,9 @@ on:
       internal-addr:
         value: ${{ jobs.preview-deployment.outputs.internal-addr }}
         description: Internal address of this service
+      date-end:
+        value:
+        description: Date of when it will be deleted
       
 jobs:
   preview-deployment:
@@ -71,18 +75,20 @@ jobs:
       - name: Get suffix
         id: suffix
         run: |
-          slugify () {
-            echo "$1" | iconv -t ascii//TRANSLIT | sed -r s/[~\^]+//g | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z
-          }
-          if [[ "${{ inputs.suffix }}" == "" ]]; then
-            echo "sanitized-suffix=${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
-          else
-            echo "sanitized-suffix=`slugify ${{ inputs.suffix }}`" >> $GITHUB_OUTPUT
-          fi
+          echo "code=${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
       - name: Get deployment-name
         id: deployment-name
         run: |
-          echo "name=${{ inputs.deployment-target }}-${{ steps.suffix.outputs.sanitized-suffix }}" >> $GITHUB_OUTPUT
+          echo "name=${{ inputs.deployment-target }}-${{ steps.suffix.outputs.code }}" >> $GITHUB_OUTPUT
+      - name: Get expiration timestamp
+        id: expiration-ts
+        run: |
+          expiration=${{ inputs.expiration}}
+          if [[ ${{ inputs.expiration }} -gt 8 ]] || [[ ${{ inputs.expiration }} -lt 1 ]]; then
+            expiration=3
+          fi
+          t=`date -d "+$expiration day" +"%s"`
+          echo "timestamp=$t" >> $GITHUB_OUTPUT
       - name: Create service
         id: kubernetes-service
         run: |
@@ -93,6 +99,7 @@ jobs:
           yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/service.yaml
           yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/service.yaml
           yq '.metadata.labels.preview="true"' -i /tmp/service.yaml
+          yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/service.yaml
           PORT=`cat /tmp/service.yaml | yq '.spec.ports.[0].port'`
           echo "addr=${{ steps.deployment-name.outputs.name }}:$PORT" >> $GITHUB_OUTPUT
           cat /tmp/service.yaml
@@ -107,8 +114,9 @@ jobs:
           yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/ingress.yaml
           yq '.metadata.name="${{ steps.deployment-name.outputs.name }}-ingress"' -i /tmp/ingress.yaml
           yq '.spec.rules[].http.paths.[0].backend.service.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/ingress.yaml
-          yq '.spec.rules[].http.paths.[0].path|="/previews/${{ steps.suffix.outputs.sanitized-suffix }}"+.' -i /tmp/ingress.yaml
+          yq '.spec.rules[].http.paths.[0].path|="/previews/${{ steps.suffix.outputs.code }}"+.' -i /tmp/ingress.yaml
           yq '.metadata.labels.preview="true"' -i /tmp/ingress.yaml
+          yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/ingress.yaml
           GATEWAY=`cat /tmp/ingress.yaml | yq '.spec.rules.[0].host'`
           echo "gateway-addr=${GATEWAY/12traits.com/solsten.io}" >> $GITHUB_OUTPUT
           cat /tmp/ingress.yaml 
@@ -124,6 +132,7 @@ jobs:
           yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
           yq '.spec.template.spec.containers.[0].name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
           yq '.metadata.labels.preview="true"' -i /tmp/deployment.yaml
+          yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/deployment.yaml
           yq '.spec.template.spec.containers.[0].image |= sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}")' -i /tmp/deployment.yaml
           cat /tmp/deployment.yaml
           kubectl apply -f /tmp/deployment.yaml
