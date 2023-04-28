@@ -45,8 +45,8 @@ on:
       internal-addr:
         value: ${{ jobs.preview-deployment.outputs.internal-addr }}
         description: Internal address of this service
-      date-end:
-        value:
+      expiration-datetime:
+        value: ${{ jobs.preview-deployment.outputs.expiration-date }}
         description: Date of when it will be deleted
       
 jobs:
@@ -56,6 +56,7 @@ jobs:
       internal-addr: ${{ steps.kubernetes-service.outputs.addr }}
       gateway-url: ${{ steps.kubernetes-ingress.outputs.gateway-addr }}
       deployment-name: ${{ steps.deployment-name.outputs.name }}
+      expiration-date: ${{ steps.expiration-ts.outputs.date-end}}
     steps:
       - uses: actions/checkout@v3
       - id: gcp-auth
@@ -89,6 +90,7 @@ jobs:
           fi
           t=`date -d "+$expiration day" +"%s"`
           echo "timestamp=$t" >> $GITHUB_OUTPUT
+          echo "date-end=`date -ud @$t`" >> $GITHUB_OUTPUT
       - name: Create service
         id: kubernetes-service
         run: |
