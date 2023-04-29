@@ -76,7 +76,7 @@ jobs:
       - name: Get code
         id: code
         run: |
-          echo "code=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+          echo "code=${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
       - name: Get deployment-name
         id: deployment-name
         run: |
