@@ -135,8 +135,8 @@ jobs:
           yq '.metadata.labels.preview="true"' -i /tmp/ingress.yaml
           yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/ingress.yaml
           GATEWAY=`cat /tmp/ingress.yaml | yq '.spec.rules.[0].host'`
-          PATH=`cat /tmp/ingress.yaml | yq '.spec.rules[].http.paths.[0].path'`
-          echo "gateway-url=${GATEWAY/12traits.com/solsten.io}/$PATH" >> $GITHUB_OUTPUT
+          PATH=`cat /tmp/ingress.yaml | yq '.spec.rules.[0].http.paths.[0].path'`
+          echo "gateway-url=${GATEWAY/12traits.com/solsten.io}$PATH" >> $GITHUB_OUTPUT
           cat /tmp/ingress.yaml 
           kubectl apply -f /tmp/ingress.yaml
       - name: Comment PR
