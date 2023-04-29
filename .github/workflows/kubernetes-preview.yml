@@ -91,6 +91,21 @@ jobs:
           t=`date -d "+$expiration day" +"%s"`
           echo "timestamp=$t" >> $GITHUB_OUTPUT
           echo "date-end=`date -ud @$t`" >> $GITHUB_OUTPUT
+      - name: Create Deployment
+        id: kubernetes-deployment
+        run: |
+          kubectl delete deployment --namespace ${{ inputs.namespace }} ${{ steps.deployment-name.outputs.name }} || true
+          kubectl get deployment --namespace ${{ inputs.namespace }} ${{ inputs.deployment-target }} -o yaml > /tmp/deployment.yaml
+          yq 'del(.metadata.creationTimestamp, .metadata.generation, .metadata.annotations, .metadata.resourceVersion, .metadata.uid, .status)' -i /tmp/deployment.yaml
+          yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/deployment.yaml
+          yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
+          yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
+          yq '.spec.template.spec.containers.[0].name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
+          yq '.metadata.labels.preview="true"' -i /tmp/deployment.yaml
+          yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/deployment.yaml
+          yq '.spec.template.spec.containers.[0].image |= sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}")' -i /tmp/deployment.yaml
+          cat /tmp/deployment.yaml
+          kubectl apply -f /tmp/deployment.yaml
       - name: Create service
         id: kubernetes-service
         run: |
@@ -110,7 +125,7 @@ jobs:
         id: kubernetes-ingress
         if: always()
         run: |
-          kubectl delete service --namespace ${{ inputs.namespace }} ${{ steps.deployment-name.outputs.name }}-ingress || true
+          kubectl delete ingress --namespace ${{ inputs.namespace }} ${{ steps.deployment-name.outputs.name }}-ingress || true
           kubectl get ingress --namespace ${{ inputs.namespace }} ${{ inputs.deployment-target}}-ingress -o yaml > /tmp/ingress.yaml
           yq 'del(.metadata.creationTimestamp, .metadata.generation, .metadata.annotations."meta.helm.sh/release-name", .metadata.annotations."meta.helm.sh/release-namespace", .metadata.resourceVersion, .metadata.uid, .status)' -i /tmp/ingress.yaml
           yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/ingress.yaml
@@ -123,21 +138,6 @@ jobs:
           echo "gateway-addr=${GATEWAY/12traits.com/solsten.io}" >> $GITHUB_OUTPUT
           cat /tmp/ingress.yaml 
           kubectl apply -f /tmp/ingress.yaml
-      - name: Create Deployment
-        id: kubernetes-deployment
-        run: |
-          kubectl delete deployment --namespace ${{ inputs.namespace }} ${{ steps.deployment-name.outputs.name }} || true
-          kubectl get deployment --namespace ${{ inputs.namespace }} ${{ inputs.deployment-target }} -o yaml > /tmp/deployment.yaml
-          yq 'del(.metadata.creationTimestamp, .metadata.generation, .metadata.annotations, .metadata.resourceVersion, .metadata.uid, .status)' -i /tmp/deployment.yaml
-          yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/deployment.yaml
-          yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
-          yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
-          yq '.spec.template.spec.containers.[0].name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
-          yq '.metadata.labels.preview="true"' -i /tmp/deployment.yaml
-          yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/deployment.yaml
-          yq '.spec.template.spec.containers.[0].image |= sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}")' -i /tmp/deployment.yaml
-          cat /tmp/deployment.yaml
-          kubectl apply -f /tmp/deployment.yaml
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v2
         with:
