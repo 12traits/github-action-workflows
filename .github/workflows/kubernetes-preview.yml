@@ -75,8 +75,14 @@ jobs:
           project_id: ${{ secrets.gcp-project-id }}
       - name: Get code
         id: code
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "code=${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
+          if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+            export JSON_RESP=`curl -s --request GET --url "${{ github.event.issue.pull_request.url }}" --header "Authorization: Bearer $GH_TOKEN"`
+            echo "code=`echo $JSON_RESP | jq -r .number`" >> $GITHUB_OUTPUT
+          fi
       - name: Get deployment-name
         id: deployment-name
         run: |
