@@ -142,10 +142,10 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            Your preview for ${{ inputs.deployment-target }} has been generated :rocket: 
-            It will be there until ${{ steps.expiration-ts.outputs.date-end }}.
-            Deployment has been created with the following name: ${{ steps.deployment-name.outputs.name }}.
-            Address to connect to your service is: ${{ steps.kubernetes-service.outputs.service-addr }}
-            Gateway path (if any) should be: ${{ steps.kubernetes-ingress.outputs.gateway-addr }}
+            Your preview for **${{ inputs.deployment-target }}** has been generated :rocket: 
+            It will be there until **${{ steps.expiration-ts.outputs.date-end }}**.
+            Deployment has been created with the following name: **${{ steps.deployment-name.outputs.name }}**.
+            Address to connect to your service is: **${{ steps.kubernetes-service.outputs.service-addr }}**
+            Gateway path (if any) should be: **${{ steps.kubernetes-ingress.outputs.gateway-addr }}**
 
 
