@@ -130,7 +130,7 @@ jobs:
           kubectl apply -f /tmp/service.yaml
       - name: Create ingress
         id: kubernetes-ingress
-        if: always()
+        continue-on-error: true
         run: |
           kubectl delete ingress --namespace ${{ inputs.namespace }} ${{ steps.deployment-name.outputs.name }}-ingress || true
           kubectl get ingress --namespace ${{ inputs.namespace }} ${{ inputs.deployment-target}}-ingress -o yaml > /tmp/ingress.yaml
