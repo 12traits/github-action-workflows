@@ -78,11 +78,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [[ "${{ inputs.docker-tag }}" =~ ^v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
-            echo "code=${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+          if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
             export JSON_RESP=`curl -s --request GET --url "${{ github.event.issue.pull_request.url }}" --header "Authorization: Bearer $GH_TOKEN"`
-            echo "code=`echo $JSON_RESP | jq -r .number`" >> $GITHUB_OUTPUT
+            if [[ "${{ inputs.docker-tag }}" =~ ^v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
+              echo "code=${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
+            else
+              echo "code=`echo $JSON_RESP | jq -r .number`" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "this workflow has to be ran into the context of a comment of a pull request"
+            exit 1
           fi
       - name: Get deployment-name
         id: deployment-name
@@ -110,6 +115,7 @@ jobs:
           yq '.spec.template.spec.containers.[0].name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
           yq '.metadata.labels.preview="true"' -i /tmp/deployment.yaml
           yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/deployment.yaml
+          yq '.metadata.labels.pr-url="${{ github.event.issue.pull_request.url }}"' -i /tmp/deployment.yaml
           yq '.spec.template.spec.containers.[0].image |= sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}")' -i /tmp/deployment.yaml
           cat /tmp/deployment.yaml
           kubectl apply -f /tmp/deployment.yaml
@@ -124,6 +130,7 @@ jobs:
           yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/service.yaml
           yq '.metadata.labels.preview="true"' -i /tmp/service.yaml
           yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/service.yaml
+          yq '.metadata.labels.pr-url="${{ github.event.issue.pull_request.url }}"' -i /tmp/deployment.yaml
           PORT=`cat /tmp/service.yaml | yq '.spec.ports.[0].port'`
           echo "service-addr=${{ steps.deployment-name.outputs.name }}:$PORT" >> $GITHUB_OUTPUT
           cat /tmp/service.yaml
@@ -141,6 +148,7 @@ jobs:
           yq '.spec.rules[].http.paths.[0].path|="/previews/${{ steps.code.outputs.code }}"+.' -i /tmp/ingress.yaml
           yq '.metadata.labels.preview="true"' -i /tmp/ingress.yaml
           yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/ingress.yaml
+          yq '.metadata.labels.pr-url="${{ github.event.issue.pull_request.url }}"' -i /tmp/deployment.yaml
           GATEWAY=`cat /tmp/ingress.yaml | yq '.spec.rules.[0].host'`
           ROUTE=`cat /tmp/ingress.yaml | yq '.spec.rules.[0].http.paths.[0].path'`
           echo "gateway-url=${GATEWAY/12traits.com/solsten.io}$ROUTE" >> $GITHUB_OUTPUT
