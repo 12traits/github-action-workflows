@@ -117,6 +117,7 @@ jobs:
           yq '.metadata.labels.preview="true"' -i /tmp/deployment.yaml
           yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/deployment.yaml
           yq '.metadata.labels.pr-number="${{ steps.code.outputs.pr-number }}"' -i /tmp/deployment.yaml
+          yq '.metadata.labels.repo="${{ github.event.repository.name }}"' -i /tmp/deployment.yaml
           yq '(..|select(has("image")).["image"]) |= sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}")' -i /tmp/deployment.yaml
           cat /tmp/deployment.yaml
           kubectl apply -f /tmp/deployment.yaml
@@ -131,7 +132,8 @@ jobs:
           yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/service.yaml
           yq '.metadata.labels.preview="true"' -i /tmp/service.yaml
           yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/service.yaml
-          yq '.metadata.labels.pr-number="${{ steps.code.outputs.pr-number }}"' -i /tmp/deployment.yaml
+          yq '.metadata.labels.pr-number="${{ steps.code.outputs.pr-number }}"' -i /tmp/service.yaml
+          yq '.metadata.labels.repo="${{ github.event.repository.name }}"' -i /tmp/service.yaml
           PORT=`cat /tmp/service.yaml | yq '.spec.ports.[0].port'`
           echo "service-addr=${{ steps.deployment-name.outputs.name }}:$PORT" >> $GITHUB_OUTPUT
           cat /tmp/service.yaml
@@ -149,7 +151,8 @@ jobs:
           yq '.spec.rules[].http.paths.[0].path|="/previews/${{ steps.code.outputs.code }}"+.' -i /tmp/ingress.yaml
           yq '.metadata.labels.preview="true"' -i /tmp/ingress.yaml
           yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/ingress.yaml
-          yq '.metadata.labels.pr-number="${{ steps.code.outputs.pr-number }}"' -i /tmp/deployment.yaml
+          yq '.metadata.labels.pr-number="${{ steps.code.outputs.pr-number }}"' -i /tmp/ingress.yaml
+          yq '.metadata.labels.repo="${{ github.event.repository.name }}"' -i /tmp/ingress.yaml
           GATEWAY=`cat /tmp/ingress.yaml | yq '.spec.rules.[0].host'`
           ROUTE=`cat /tmp/ingress.yaml | yq '.spec.rules.[0].http.paths.[0].path'`
           echo "gateway-url=${GATEWAY/12traits.com/solsten.io}$ROUTE" >> $GITHUB_OUTPUT
