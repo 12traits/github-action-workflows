@@ -116,7 +116,7 @@ jobs:
           yq '.metadata.labels.preview="true"' -i /tmp/deployment.yaml
           yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/deployment.yaml
           yq '.metadata.labels.pr-url="${{ github.event.issue.pull_request.url }}"' -i /tmp/deployment.yaml
-          yq '(..|select(has("image")).["image"]) |= sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}") -i /tmp/deployment.yaml
+          yq '(..|select(has("image")).["image"]) |= sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}")' -i /tmp/deployment.yaml
           cat /tmp/deployment.yaml
           kubectl apply -f /tmp/deployment.yaml
       - name: Create service
