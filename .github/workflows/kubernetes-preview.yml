@@ -124,6 +124,7 @@ jobs:
           yq '.metadata.labels.repo="${{ github.event.repository.name }}"' -i /tmp/deployment.yaml
           yq '(..|select(has("image")).["image"]) |= sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}")' -i /tmp/deployment.yaml
           VARS=`echo "${{ inputs.comment }}" | sed "s/#preview//" | sed '/^[[:blank:]]*$/ d'`
+          echo $VARS
           while IFS= read -r line; do
             NAME=`echo $line | cut -d "=" -s -f 1`
             VALUE=`echo $line | cut -d "=" -s -f 2`
