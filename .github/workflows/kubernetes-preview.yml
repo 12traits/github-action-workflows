@@ -35,6 +35,10 @@ on:
         type: string
         description: Expiration in days (1, 2, 3, 5 or 8)
         default: "3"
+      comment:
+        type: string
+        description: comment body that could contains some config
+        default: ""
     outputs:
       deployment-name:
         value: ${{ jobs.preview-deployment.outputs.deployment-name }}
