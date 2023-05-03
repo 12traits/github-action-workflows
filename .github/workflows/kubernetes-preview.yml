@@ -126,8 +126,8 @@ jobs:
           VARS=`echo "${{ inputs.comment }}" | sed "s/#preview//" | sed '/^[[:blank:]]*$/ d'`
           echo $VARS
           while IFS= read -r line; do
-            NAME=`echo $line | cut -d "=" -s -f 1`
-            VALUE=`echo $line | cut -d "=" -s -f 2`
+            NAME=`echo $line | cut -d "=" -s -f 1 | sed s/\r//`
+            VALUE=`echo $line | cut -d "=" -s -f 2 | sed s/\r//`
             if [[ -z "$NAME" ]] || [[ -z "$VALUE" ]]; then
               continue
             fi
