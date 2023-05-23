@@ -131,6 +131,7 @@ jobs:
             if [[ -z "$NAME" ]] || [[ -z "$VALUE" ]]; then
               continue
             fi
+            yq ".spec.template.spec.containers.[0].env |= map(select(.name == \"$NAME\") |= del(.valueFrom))" -i /tmp/deployment.yaml
             yq ".spec.template.spec.containers.[0].env |= map(select(.name == \"$NAME\").value=\"$VALUE\")" -i /tmp/deployment.yaml
           done <<< "$VARS"
           cat /tmp/deployment.yaml
