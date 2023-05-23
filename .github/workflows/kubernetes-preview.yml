@@ -83,7 +83,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
-            export JSON_RESP=`curl -s --request GET --url "${{ github.event.issue.pull_request.url }}" --header "Authorization: Bearer $GH_TOKEN"`
+            export JSON_RESP=`curl -s --request GET --url "${{ github.event.issue.pull_request.url }}" --header "Authorization: Bearer ${{ env.GH_TOKEN }}"`
             echo "pr-number=`echo $JSON_RESP | jq -r .number`" >> $GITHUB_OUTPUT
             if [[ "${{ inputs.docker-tag }}" =~ ^v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ ]]; then
               echo "code=${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
