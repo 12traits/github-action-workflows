@@ -150,7 +150,7 @@ jobs:
           yq '.metadata.labels.pr-number="${{ steps.code.outputs.pr-number }}"' -i /tmp/service.yaml
           yq '.metadata.labels.repo="${{ github.event.repository.name }}"' -i /tmp/service.yaml
           PORT=`cat /tmp/service.yaml | yq '.spec.ports.[0].port'`
-          echo "service-addr=${{ steps.deployment-name.outputs.name }}:$PORT" >> $GITHUB_OUTPUT
+          echo "service-addr=${{ steps.deployment-name.outputs.name }}.${{ inputs.namespace }}:$PORT" >> $GITHUB_OUTPUT
           cat /tmp/service.yaml
           kubectl apply -f /tmp/service.yaml
       - name: Create ingress
