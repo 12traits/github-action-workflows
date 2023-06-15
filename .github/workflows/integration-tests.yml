@@ -1,0 +1,55 @@
+name: integration-tests
+on:
+  workflow_call:
+    secrets:
+      gcp-project-id:
+        required: true
+      k8s-sa-json: 
+        required: true
+        description: json with gcp SA json
+    inputs:
+      cronjob-name:
+        required: true
+        type: string
+        description: Name of the cronjob we need to template out
+      namespace:
+        required: true
+        type: string
+        description: namespace
+      docker-tag:
+        required: true
+        type: string
+        description: integration docker tag to use
+      env-vars:
+        type: string
+        description: custom env vars to replace to run the docker image
+        default: 
+jobs:
+    create-job:
+      runs-on: self-hosted
+      steps:
+        - id: gcp-auth
+          uses: google-github-actions/auth@v0
+          with:
+            credentials_json: ${{ secrets.k8s-sa-json }}
+        - name: Set up Cloud SDK
+          uses: 'google-github-actions/setup-gcloud@v0'
+          with:
+            install_components: 'gke-gcloud-auth-plugin'
+        - name: 'Connect to cluster'
+          uses: google-github-actions/get-gke-credentials@v0
+          with:
+              cluster_name: staging
+              location: europe-west1-b
+              project_id: ${{ secrets.gcp-project-id }}
+        - name: Run integration tests on staging
+          run: |
+              kubectl create job ${{ inputs.cronjob-name}}-${{ inputs.docker-tag }} --from=cronjob/${{ inputs.cronjob-name}} --dry-run=client --namespace ${{ inputs.namespace }} --output=yaml > /tmp/job.yaml
+              kubectl apply -f /tmp/job.yaml
+              kubectl wait --for=condition=ready pod --selector=job-name=${{ inputs.cronjob-name}}-${{ inputs.docker-tag }} --timeout=30s --namespace ${{ inputs.namespace }}
+              kubectl logs --follow job/${{ inputs.cronjob-name}}-${{ inputs.docker-tag }} --namespace ${{ inputs.namespace }}
+              kubectl wait --for=condition=complete job/${{ inputs.cronjob-name}}-${{ inputs.docker-tag }} --timeout=30s --namespace ${{ inputs.namespace }}
+        - name: Clean integration test job
+          run: |
+              kubectl delete job/${{ inputs.cronjob-name}}-${{ inputs.docker-tag }} --namespace ${{ inputs.namespace }}
+          if: always()
