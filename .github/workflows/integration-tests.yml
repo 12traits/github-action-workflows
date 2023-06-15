@@ -24,6 +24,10 @@ on:
         type: string
         description: custom env vars to replace to run the docker image
         default: 
+      cluster:
+        type: string
+        description: what cluster to connect to
+        default: staging
 jobs:
     create-job:
       runs-on: self-hosted
@@ -39,7 +43,7 @@ jobs:
         - name: 'Connect to cluster'
           uses: google-github-actions/get-gke-credentials@v0
           with:
-              cluster_name: staging
+              cluster_name: ${{ inputs.cluster }}
               location: europe-west1-b
               project_id: ${{ secrets.gcp-project-id }}
         - name: Run integration tests on staging
