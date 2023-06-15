@@ -49,8 +49,8 @@ jobs:
         - name: Run integration tests on staging
           run: |
               kubectl create job ${{ inputs.cronjob-name}}-${{ inputs.docker-tag }} --from=cronjob/${{ inputs.cronjob-name}} --dry-run=client --namespace ${{ inputs.namespace }} --output=yaml > /tmp/job.yaml
-              kubectl apply -f /tmp/job.yaml
               yq '(..|select(has("image")).["image"]) |= sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}")' -i /tmp/job.yaml
+              kubectl apply -f /tmp/job.yaml
               kubectl wait --for=condition=ready pod --selector=job-name=${{ inputs.cronjob-name}}-${{ inputs.docker-tag }} --timeout=30s --namespace ${{ inputs.namespace }}
               kubectl logs --follow job/${{ inputs.cronjob-name}}-${{ inputs.docker-tag }} --namespace ${{ inputs.namespace }}
               kubectl wait --for=condition=complete job/${{ inputs.cronjob-name}}-${{ inputs.docker-tag }} --timeout=30s --namespace ${{ inputs.namespace }}
