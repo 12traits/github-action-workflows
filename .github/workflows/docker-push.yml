@@ -25,10 +25,6 @@ on:
         type: string
         description: Docker tag
         default: dev
-      is-latest:
-        type: boolean
-        description: Do we want to tag this image as latest
-        default: false
       context:
         type: string
         description: Docker context, path to where find the dockerfile..
