@@ -118,7 +118,7 @@ jobs:
           yq '.metadata.labels."app.kubernetes.io/managed-by"="Platform"' -i /tmp/deployment.yaml
           yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
           yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
-          yq '.spec.template.spec.containers.[0].name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
+          yq '.spec.template.spec.containers.[].name += "-${{ steps.code.outputs.code }}"' -i /tmp/deployment.yaml
           yq '.metadata.labels.preview="true"' -i /tmp/deployment.yaml
           yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/deployment.yaml
           yq '.metadata.labels.pr-number="${{ steps.code.outputs.pr-number }}"' -i /tmp/deployment.yaml
