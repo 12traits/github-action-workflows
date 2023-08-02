@@ -29,6 +29,11 @@ on:
         type: string
         description: Container name
         default: ''
+      additional-containers-name:
+        required: false
+        type: string
+        description: Additional container names
+        default: ''
       init-container-name:
         required: false
         type: string
@@ -64,7 +69,6 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.k8s-sa-json }}
-
       - name: Set up Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v1'
         with:
@@ -91,11 +95,27 @@ jobs:
           else
             echo "init-cli=${{ inputs.init-container-name }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
           fi
+      - name: Assess additional containers
+        id: additional-containers
+        run: |
+          if [[ "${{ inputs.additional-containers-name }}" == "" ]]; then
+            echo "additional-cli=" >> $GITHUB_OUTPUT
+          else
+            containers=$(echo "${{ inputs.additional-containers-name }}" | tr ";" "\n")
+            ADDITIONALS=""
+            for container in $containers
+            do
+                ADDITIONALS+="${container}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }} "
+            done
+            echo $ADDITIONALS
+            echo "additional-cli=${ADDITIONALS}" >> $GITHUB_OUTPUT
+          fi
       - name: Deploy
         id: deploy-docker-image
         run: |
           kubectl set image ${{ inputs.deployment-type }} ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} \
             ${{ steps.container.outputs.name }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }} \
+            ${{ steps.additional-containers.outputs.additional-cli }} \
             ${{ steps.init-container.outputs.init-cli }}
           kubectl rollout status ${{ inputs.deployment-type}}/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
       # some pods have multiple containers
