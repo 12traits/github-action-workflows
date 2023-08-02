@@ -98,7 +98,7 @@ jobs:
             GIT_AUTH_TOKEN=${{ secrets.gh-token }}
         env:
           DOCKER_BUILDKIT: 1
-      - uses: act10ns/slack@v1
+      - uses: act10ns/slack@v2
         with: 
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}

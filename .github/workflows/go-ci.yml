@@ -49,7 +49,7 @@ jobs:
         id: go-unit-tests
         run: go test -v ./...
 
-      - uses: act10ns/slack@v1
+      - uses: act10ns/slack@v2
         with: 
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
@@ -86,7 +86,7 @@ jobs:
           run: staticcheck ${{ inputs.path }}
         - name: unparam
           run: unparam ${{ inputs.path }}
-        - uses: act10ns/slack@v1
+        - uses: act10ns/slack@v2
           with: 
             status: ${{ job.status }}
             steps: ${{ toJson(steps) }}
