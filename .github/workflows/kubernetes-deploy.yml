@@ -46,7 +46,7 @@ on:
       docker-registry:
         type: string
         description: Docker registry DNS
-        default: eu.gcr.io
+        default: europe-west1-docker.pkg.dev
       cluster:
         required: true
         type: string
@@ -93,7 +93,7 @@ jobs:
           if [[ "${{ inputs.init-container-name }}" == "" ]]; then
             echo "init-cli=" >> $GITHUB_OUTPUT
           else
-            echo "init-cli=${{ inputs.init-container-name }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
+            echo "init-cli=${{ inputs.init-container-name }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/solsten/${{ inputs.docker-image }}:${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
           fi
       - name: Assess additional containers
         id: additional-containers
@@ -105,7 +105,7 @@ jobs:
             ADDITIONALS=""
             for container in $containers
             do
-                ADDITIONALS+="${container}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }} "
+                ADDITIONALS+="${container}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/solsten/${{ inputs.docker-image }}:${{ inputs.docker-tag }} "
             done
             echo "additional-cli=${ADDITIONALS}" >> $GITHUB_OUTPUT
           fi
@@ -113,7 +113,7 @@ jobs:
         id: deploy-docker-image
         run: |
           kubectl set image ${{ inputs.deployment-type }} ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} \
-            ${{ steps.container.outputs.name }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/${{ inputs.docker-image }}:${{ inputs.docker-tag }} \
+            ${{ steps.container.outputs.name }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/solsten/${{ inputs.docker-image }}:${{ inputs.docker-tag }} \
             ${{ steps.additional-containers.outputs.additional-cli }} \
             ${{ steps.init-container.outputs.init-cli }}
           kubectl rollout status ${{ inputs.deployment-type}}/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
