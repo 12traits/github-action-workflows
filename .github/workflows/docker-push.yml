@@ -94,7 +94,7 @@ jobs:
             type=registry,ref=${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/cache/${{ inputs.repository-base-name }}
             alpine:latest
             python:3.8-slim-buster
-          cache-to: type=registry,ref=${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/cache/${{ inputs.repository-base-name }}
+          cache-to: type=registry,ref=${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/cache/${{ inputs.repository-base-name }},compression=zstd
           build-args: |
             GH_ACCESS_TOKEN=${{ secrets.gh-token }}
           secrets: |
