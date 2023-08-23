@@ -90,9 +90,11 @@ jobs:
             ${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/solsten/${{ inputs.repository-base-name }}:${{ steps.vars-step.outputs.sha-short }}
             ${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/solsten/${{ inputs.repository-base-name }}:${{ inputs.docker-tag }}
             ${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/solsten/${{ inputs.repository-base-name }}:${{ steps.vars-step.outputs.branch }}
-          # cache-from: type=gha
-          # cache-to: type=gha,mode=max
-          # v in build-args: BUILDKIT_INLINE_CACHE=1
+          cache-from: |
+            type=registry,ref=${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/cache/${{ inputs.repository-base-name }}
+            alpine:latest
+            python:3.8-slim-buster
+          cache-to: type=registry,ref=${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/cache/${{ inputs.repository-base-name }}
           build-args: |
             GH_ACCESS_TOKEN=${{ secrets.gh-token }}
           secrets: |
