@@ -75,6 +75,8 @@ jobs:
           registry: ${{ inputs.docker-registry }}
           username: _json_key
           password: ${{ secrets.gcp-sa-json }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -95,6 +97,7 @@ jobs:
             alpine:latest
             python:3.8-slim-buster
           cache-to: type=registry,ref=${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/cache/${{ inputs.repository-base-name }},compression=zstd
+          platforms: linux/amd64,darwin/arm64,darwin/amd64 
           build-args: |
             GH_ACCESS_TOKEN=${{ secrets.gh-token }}
           secrets: |
