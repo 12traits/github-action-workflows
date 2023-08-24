@@ -99,6 +99,7 @@ jobs:
           file: ${{ inputs.context}}/${{ inputs.file }}
           push: true
           target: builder
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/cache/${{ inputs.repository-base-name }}:builder
           cache-from: |
@@ -127,7 +128,6 @@ jobs:
           cache-to: type=registry,ref=${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/cache/${{ inputs.repository-base-name }},compression=zstd,mode=max
           build-args: |
             GH_ACCESS_TOKEN=${{ secrets.gh-token }}
-            BUILDKIT_INLINE_CACHE=1
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.gh-token }}
         env:
