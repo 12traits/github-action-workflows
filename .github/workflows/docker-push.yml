@@ -85,8 +85,7 @@ jobs:
         shell: bash
         id: builder-detect
         run: |
-          RESULT=`cat "${{ inputs.context}}/${{ inputs.file }}" | grep "as builder"`
-          if [[ -n $RESULT ]]; then
+          if [[ grep -q "as builder" ${{ inputs.context}}/${{ inputs.file }} ]]; then
             echo "available=true" >> $GITHUB_OUTPUT;
           else
             echo "available=false" >> $GITHUB_OUTPUT;
