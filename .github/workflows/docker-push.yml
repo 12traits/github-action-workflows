@@ -77,8 +77,6 @@ jobs:
           password: ${{ secrets.gcp-sa-json }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
-        with:
-          platforms: arm64
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -101,7 +99,6 @@ jobs:
           file: ${{ inputs.context}}/${{ inputs.file }}
           push: true
           target: builder
-          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/cache/${{ inputs.repository-base-name }}:builder
           cache-from: |
