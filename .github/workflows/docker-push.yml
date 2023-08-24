@@ -99,7 +99,6 @@ jobs:
           file: ${{ inputs.context}}/${{ inputs.file }}
           push: true
           target: builder
-          platforms: linux/amd64,darwin/arm64,darwin/amd64
           tags: |
             ${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/cache/${{ inputs.repository-base-name }}:builder
           cache-from: |
