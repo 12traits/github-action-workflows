@@ -69,10 +69,10 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.k8s-sa-json }}
-      # - name: Set up Cloud SDK
-      #   uses: 'google-github-actions/setup-gcloud@v1'
-      #   with:
-      #     install_components: 'gke-gcloud-auth-plugin'
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v1'
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
       - name: "Connect to cluster"
         uses: google-github-actions/get-gke-credentials@v1
         with:
