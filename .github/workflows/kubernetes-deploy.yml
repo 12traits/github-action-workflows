@@ -137,5 +137,5 @@ jobs:
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
           webhook-url: ${{ secrets.slack-build-webhook }}
-          message: "Deploying ${{ inputs.deployment-image }}:${{ inputs.docker-tag }} on {{ env.GITHUB_REF_NAME }}"
+          message: "Deploying `${{ inputs.deployment-image }}:${{ inputs.docker-tag }}` on `{{ env.GITHUB_REF_NAME }}`"
         if: always()
