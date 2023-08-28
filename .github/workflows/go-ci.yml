@@ -56,6 +56,7 @@ jobs:
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
           webhook-url: ${{ secrets.slack-build-webhook }}
+          message: "Building / testing PR ({{ env.GITHUB_HEAD_REF }}/{{ env.GITHUB_REF_NAME }})"
         if: failure()
   manual-lint:
     name: manual-lint
@@ -93,4 +94,5 @@ jobs:
             status: ${{ job.status }}
             steps: ${{ toJson(steps) }}
             webhook-url: ${{ secrets.slack-build-webhook }}
+            message: "Linting PR ({{ env.GITHUB_HEAD_REF }}/{{ env.GITHUB_REF_NAME }})"
           if: failure()
