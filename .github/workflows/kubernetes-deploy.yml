@@ -64,7 +64,7 @@ jobs:
     name: "Update docker image/tag to a k8s deployment"
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: gcp-auth
         uses: google-github-actions/auth@v1
         with:

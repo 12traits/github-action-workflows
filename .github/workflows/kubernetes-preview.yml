@@ -62,7 +62,7 @@ jobs:
       deployment-name: ${{ steps.deployment-name.outputs.name }}
       expiration-date: ${{ steps.expiration-ts.outputs.date-end }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: gcp-auth
         uses: google-github-actions/auth@v1
         with:
