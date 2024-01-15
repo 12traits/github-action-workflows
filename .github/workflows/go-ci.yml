@@ -45,6 +45,7 @@ jobs:
         id: go-build
         env:
           BUILD_NUMBER: ${{ github.run_number }}
+          GOPROXY: https://proxy.golang.org,direct
         run: go build ./...
 
       - name: Test
