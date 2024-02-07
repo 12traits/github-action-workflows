@@ -64,15 +64,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: gcp-auth
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.k8s-sa-json }}
       - name: Set up Cloud SDK
-        uses: 'google-github-actions/setup-gcloud@v1'
+        uses: google-github-actions/setup-gcloud@v2
         with:
           install_components: 'gke-gcloud-auth-plugin'
       - name: "Connect to cluster"
-        uses: google-github-actions/get-gke-credentials@v1
+        uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ inputs.cluster }}
           location: ${{ inputs.zone }}
