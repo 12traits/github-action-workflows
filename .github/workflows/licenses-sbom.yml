@@ -25,7 +25,7 @@ jobs:
         with:
           gh-token: ${{ secrets.gh-token }}
       - run: echo ${{ steps.license-check.outputs.license_report_json }} | base64 -d > /tmp/licenses-report.json
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: licenses-report
           path: /tmp/licenses-report.json
@@ -65,12 +65,12 @@ jobs:
       - name: Set up Cloud SDK
         if: ${{ steps.secret-check.outputs.available == 'true' }}
         uses: 'google-github-actions/setup-gcloud@v1'
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         if: ${{ steps.secret-check.outputs.available == 'true' }}
         with:
           name: licenses-report
           path: /tmp/${{ steps.vars-step.outputs.sha-short }}
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         if: ${{ steps.secret-check.outputs.available == 'true' }}
         with:
           name: sbom.spdx
