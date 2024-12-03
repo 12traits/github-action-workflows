@@ -80,7 +80,7 @@ jobs:
               git config --global url."https://${{ env.ORG_GITHUB_TOKEN }}@github.com/12traits".insteadOf "https://github.com/12traits"           
         - name: install go ci deps
           run: |
-            go install honnef.co/go/tools/cmd/staticcheck@2024.1
+            go install honnef.co/go/tools/cmd/staticcheck@latest
             go install mvdan.cc/unparam@latest
         - name: verify dependencies
           run: go mod verify
