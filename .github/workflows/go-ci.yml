@@ -20,6 +20,10 @@ on:
         type: string
         description: Path to look at from within the workdir
         default: ./pkg/... ./cmd/...
+      go-version:
+        type: string
+        description: Golang version
+        default: 1.22
 
 jobs:
   test:
@@ -31,7 +35,7 @@ jobs:
     steps:          
       - uses: actions/setup-go@v4
         with:
-          go-version: '1.22'
+          go-version: ${{ inputs.go-version }}
           cache: false
 
       - uses: actions/checkout@v4
@@ -69,7 +73,7 @@ jobs:
     steps:  
         - uses: actions/setup-go@v4
           with:
-            go-version: '1.22'
+            go-version: ${{ inputs.go-version }}
             cache: false
 
         - uses: actions/checkout@v4
