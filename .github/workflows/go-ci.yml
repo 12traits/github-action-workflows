@@ -5,8 +5,6 @@ on:
     secrets:
       gh-token:
         required: true
-      slack-build-webhook:
-        required: false
     inputs:
       workdir:
         type: string
@@ -57,13 +55,6 @@ jobs:
         id: go-unit-tests
         run: go test -v ./...
 
-      - uses: act10ns/slack@v2
-        with: 
-          status: ${{ job.status }}
-          steps: ${{ toJson(steps) }}
-          webhook-url: ${{ secrets.slack-build-webhook }}
-          message: "Building / testing PR ({{ env.GITHUB_BASE_REF }}/{{ env.GITHUB_REF_NAME }})"
-        if: failure()
   manual-lint:
     name: manual-lint
     runs-on: self-hosted
@@ -95,10 +86,3 @@ jobs:
           run: staticcheck ${{ inputs.path }}
         - name: unparam
           run: unparam ${{ inputs.path }}
-        - uses: act10ns/slack@v2
-          with: 
-            status: ${{ job.status }}
-            steps: ${{ toJson(steps) }}
-            webhook-url: ${{ secrets.slack-build-webhook }}
-            message: "Linting PR ({{ env.GITHUB_BASE_REF }}/{{ env.GITHUB_REF_NAME }})"
-          if: failure()
