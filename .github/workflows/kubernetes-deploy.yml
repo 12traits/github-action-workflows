@@ -133,6 +133,7 @@ jobs:
             -p '{"data": {"version": "${{ inputs.docker-tag }}", "deployed_at": "'"$DEPLOYED_DATE"'"}}' \
             --namespace ${{ inputs.namespace }}
       - uses: act10ns/slack@v2
+        continue-on-error: true
         with: 
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
