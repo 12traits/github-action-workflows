@@ -41,7 +41,7 @@ jobs:
         env:
           ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
         run: |
-            git config --global url."https://${{ env.ORG_GITHUB_TOKEN }}@github.com/12traits".insteadOf "https://github.com/12traits"   
+            git config --global url."https://${{ env.ORG_GITHUB_TOKEN }}:@github.com/".insteadOf "https://github.com/"  
 
       - name: Build
         id: go-build
@@ -73,7 +73,7 @@ jobs:
           env:
             ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
           run: |
-              git config --global url."https://${{ env.ORG_GITHUB_TOKEN }}@github.com/12traits".insteadOf "https://github.com/12traits"           
+              git config --global url."https://${{ env.ORG_GITHUB_TOKEN }}:@github.com/".insteadOf "https://github.com/"           
         - name: install go ci deps
           run: |
             go install honnef.co/go/tools/cmd/staticcheck@latest
