@@ -30,6 +30,10 @@ jobs:
       run:
         shell: bash
         working-directory: ${{ inputs.workdir }}
+    env:
+      GOPRIVATE: github.com/12traits
+      ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
+      GOPROXY: https://proxy.golang.org,direct
     steps:          
       - uses: actions/setup-go@v4
         with:
@@ -39,19 +43,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.gh-token }}
-          
+
       - name: Granting private modules access
-        env:
-          ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
         run: |
           git config --global url."https://${ORG_GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
       - name: Build
         id: go-build
-        env:
-          BUILD_NUMBER: ${{ github.run_number }}
-          GOPROXY: https://proxy.golang.org,direct
-          GOPRIVATE: github.com/12traits
         run: go build ./...
 
       - name: Test
@@ -65,6 +63,10 @@ jobs:
       run:
         shell: bash
         working-directory: ${{ inputs.workdir }}
+    env:
+      GOPRIVATE: github.com/12traits
+      GONOSUMDB: github.com/12traits
+      ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
     steps:  
       - uses: actions/setup-go@v4
         with:
@@ -76,8 +78,6 @@ jobs:
           token: ${{ secrets.gh-token }}
 
       - name: Granting private modules access
-        env:
-          ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
         run: |
           git config --global url."https://${ORG_GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
@@ -87,27 +87,17 @@ jobs:
           go install mvdan.cc/unparam@latest
 
       - name: Download dependencies
-        env:
-          GOPRIVATE: github.com/12traits
         run: go mod download
 
       - name: Verify dependencies
-        env:
-          GOPRIVATE: github.com/12traits
         run: go mod verify
 
       - name: go vet
-        env:
-          GOPRIVATE: github.com/12traits
         run: go vet ${{ inputs.path }}
 
       - name: staticcheck
-        env:
-          GOPRIVATE: github.com/12traits
         run: staticcheck ${{ inputs.path }}
 
       - name: unparam
-        env:
-          GOPRIVATE: github.com/12traits
         run: unparam ${{ inputs.path }}
 
