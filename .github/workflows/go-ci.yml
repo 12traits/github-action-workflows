@@ -34,7 +34,7 @@ jobs:
       GOPRIVATE: github.com/12traits
       ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
       GOPROXY: https://proxy.golang.org,direct
-    steps:          
+    steps:
       - uses: actions/setup-go@v4
         with:
           go-version: ${{ inputs.go-version }}
@@ -44,7 +44,7 @@ jobs:
         with:
           token: ${{ secrets.gh-token }}
 
-      - name: Granting private modules access
+      - name: Grant private module access
         run: |
           git config --global url."https://${ORG_GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
@@ -67,7 +67,7 @@ jobs:
       GOPRIVATE: github.com/12traits
       GONOSUMDB: github.com/12traits
       ORG_GITHUB_TOKEN: ${{ secrets.gh-token }}
-    steps:  
+    steps:
       - uses: actions/setup-go@v4
         with:
           go-version: ${{ inputs.go-version }}
@@ -77,20 +77,18 @@ jobs:
         with:
           token: ${{ secrets.gh-token }}
 
-      - name: Granting private modules access
+      - name: Grant private module access + Download deps
         run: |
           git config --global url."https://${ORG_GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+          GIT_TERMINAL_PROMPT=0 go mod download
 
       - name: Install lint tools
         run: |
           go install honnef.co/go/tools/cmd/staticcheck@latest
           go install mvdan.cc/unparam@latest
 
-      - name: Download dependencies
-        run: go mod download
-
       - name: Verify dependencies
-        run: go mod verify
+        run: GIT_TERMINAL_PROMPT=0 go mod verify
 
       - name: go vet
         run: go vet ${{ inputs.path }}
