@@ -44,7 +44,16 @@ jobs:
         with:
           token: ${{ secrets.gh-token }}
 
-      - name: Grant private module access
+      - name: Inject GitHub token for private module access
+        run: |
+          cat >> ~/.netrc <<EOF
+          machine github.com
+          login ${ORG_GITHUB_TOKEN}
+          password x-oauth-basic
+          EOF
+          chmod 0600 ~/.netrc
+
+      - name: Grant private module access (for new remotes)
         run: |
           git config --global url."https://${ORG_GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
@@ -77,10 +86,21 @@ jobs:
         with:
           token: ${{ secrets.gh-token }}
 
-      - name: Grant private module access + Download deps
+      - name: Inject GitHub token for private module access
+        run: |
+          cat >> ~/.netrc <<EOF
+          machine github.com
+          login ${ORG_GITHUB_TOKEN}
+          password x-oauth-basic
+          EOF
+          chmod 0600 ~/.netrc
+
+      - name: Grant private module access (for new remotes)
         run: |
           git config --global url."https://${ORG_GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-          GIT_TERMINAL_PROMPT=0 go mod download
+
+      - name: Download deps
+        run: GIT_TERMINAL_PROMPT=0 go mod download
 
       - name: Install lint tools
         run: |
@@ -98,4 +118,3 @@ jobs:
 
       - name: unparam
         run: unparam ${{ inputs.path }}
-
