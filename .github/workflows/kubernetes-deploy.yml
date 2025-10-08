@@ -114,7 +114,30 @@ jobs:
             ${{ steps.container.outputs.name }}=${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/solsten/${{ inputs.docker-image }}:${{ inputs.docker-tag }} \
             ${{ steps.additional-containers.outputs.additional-cli }} \
             ${{ steps.init-container.outputs.init-cli }}
-          kubectl rollout status ${{ inputs.deployment-type}}/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
+
+          # For Deployments and StatefulSets, wait for the rollout to complete.
+          if [[ "${{ inputs.deployment-type }}" == "deployment" || "${{ inputs.deployment-type }}" == "statefulset" ]]; then
+            kubectl rollout status ${{ inputs.deployment-type}}/${{ inputs.deployment-image }} -n ${{ inputs.namespace }}
+
+          # For CronJobs, verify that the image in the definition was updated.
+          elif [[ "${{ inputs.deployment-type }}" == "cronjob" ]]; then
+            EXPECTED_IMAGE="${{ inputs.docker-registry }}/${{ secrets.gcp-project-id }}/solsten/${{ inputs.docker-image }}:${{ inputs.docker-tag }}"
+            sleep 5
+            ACTUAL_IMAGE=$(kubectl get cronjob ${{ inputs.deployment-image }} -n ${{ inputs.namespace }} -o jsonpath='{.spec.jobTemplate.spec.template.spec.containers[0].image}')
+            
+            echo "Expected image: $EXPECTED_IMAGE"
+            echo "Actual image:   $ACTUAL_IMAGE"
+            if [[ "$ACTUAL_IMAGE" == "$EXPECTED_IMAGE" ]]; then
+              echo "✅ CronJob image successfully updated in the resource definition."
+            else
+              echo "❌ Error: CronJob image was not updated correctly."
+              exit 1
+            fi
+
+          # For any other resource type, print a message and continue.
+          else
+            echo "Skipping rollout status for ${{ inputs.deployment-type }} (not supported)"
+          fi
       # some pods have multiple containers
       # right now all containers use same docker image and docker tag
       # but that might change in the future, and for debugging or hotfixing
