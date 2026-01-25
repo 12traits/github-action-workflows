@@ -31,6 +31,10 @@ on:
         type: string
         description: Dockerfile name
         default: Dockerfile
+      runner-label:
+        type: string
+        description: Optional additional runner label (e.g. staging, prod)
+        default: ""
     outputs:
       sha-short:
         value: ${{ jobs.docker-push.outputs.sha-short }}
@@ -41,7 +45,7 @@ on:
 
 jobs:
   docker-push:
-    runs-on: self-hosted
+    runs-on: ${{ inputs.runner-label != '' && fromJSON(format('["self-hosted","{0}"]', inputs.runner-label)) || 'self-hosted' }}
     outputs:
       sha-short: ${{ steps.vars-step.outputs.sha-short }}
       branch: ${{ steps.vars-step.outputs.branch }}
