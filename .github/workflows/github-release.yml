@@ -25,7 +25,11 @@ jobs:
           HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           cd "$GITHUB_WORKSPACE"
-          SEMVER=$(printf '%s\n' "$HEAD_COMMIT_MESSAGE" | grep -i "release-" | cut -d '-' -f 2 | head -n 1)
+          # Extract just the semver after "release-", ignoring any trailing text
+          # such as the "(#1234)" GitHub appends to PR-title-style merge commits.
+          # Handles both "Merge pull request #N from org/release-X.Y.Z" and
+          # "release-X.Y.Z (#N)".
+          SEMVER=$(printf '%s\n' "$HEAD_COMMIT_MESSAGE" | grep -oiE 'release-[0-9]+\.[0-9]+\.[0-9]+' | head -n 1 | cut -d '-' -f 2)
           echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
