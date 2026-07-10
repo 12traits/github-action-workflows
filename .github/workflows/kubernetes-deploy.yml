@@ -67,10 +67,10 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.k8s-sa-json }}
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          install_components: 'gke-gcloud-auth-plugin'
+      # No Cloud SDK setup: get-gke-credentials embeds a short-lived token in the
+      # kubeconfig (use_auth_provider defaults to false), so kubectl — preinstalled
+      # on the runner — needs neither gcloud nor the gke auth plugin. Installing
+      # them cost ~60s per job.
       - name: "Connect to cluster"
         uses: google-github-actions/get-gke-credentials@v2
         with:
