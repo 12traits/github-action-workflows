@@ -58,18 +58,23 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
             export JSON_RESP=`curl -s --request GET --url "${{ github.event.issue.pull_request.url }}" --header "Authorization: Bearer ${{ env.GH_TOKEN}}"`
+            echo "sha=`echo $JSON_RESP | jq -r .head.sha`" >> $GITHUB_OUTPUT
             echo "sha-short=`echo $JSON_RESP | jq -r .head.sha | cut -c1-7`" >> $GITHUB_OUTPUT
             echo "branch=`echo $JSON_RESP | jq -r .head.ref`" >> $GITHUB_OUTPUT
           elif [[ $GITHUB_REF = *refs/heads/* ]]; then
+            echo "sha=$GITHUB_SHA" >> $GITHUB_OUTPUT
             echo "sha-short=`echo $GITHUB_SHA | cut -c1-7`" >> $GITHUB_OUTPUT
             echo "branch=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
           else
+            echo "sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
             echo "sha-short=`echo ${{ github.event.pull_request.head.sha }} | cut -c1-7`" >> $GITHUB_OUTPUT
             echo "branch=$GITHUB_HEAD_REF" >> $GITHUB_OUTPUT
           fi
+      # Check out the SHA the image is tagged with, not the branch: a queued job
+      # would otherwise build whatever the branch tip is when it starts.
       - uses: actions/checkout@v4
         with:
-          ref: ${{ steps.vars-step.outputs.branch }}
+          ref: ${{ steps.vars-step.outputs.sha }}
 
       - name: Login to GCR
         uses: docker/login-action@v3
