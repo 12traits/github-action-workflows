@@ -35,6 +35,10 @@ on:
         type: string
         description: Optional additional runner label (e.g. staging, prod)
         default: ""
+      build-args:
+        type: string
+        description: Extra Docker build args, one KEY=value per line
+        default: ""
     outputs:
       sha-short:
         value: ${{ jobs.docker-push.outputs.sha-short }}
@@ -108,6 +112,7 @@ jobs:
           cache-to: type=registry,ref=${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/cache/${{ inputs.repository-base-name }}:builder,compression=zstd,mode=max
           build-args: |
             GH_ACCESS_TOKEN=${{ secrets.gh-token }}
+            ${{ inputs.build-args }}
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.gh-token }}
         env:
@@ -129,6 +134,7 @@ jobs:
           cache-to: type=registry,ref=${{ inputs.docker-registry}}/${{ secrets.gcp-project-id }}/cache/${{ inputs.repository-base-name }},compression=zstd,mode=max
           build-args: |
             GH_ACCESS_TOKEN=${{ secrets.gh-token }}
+            ${{ inputs.build-args }}
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.gh-token }}
         env:
